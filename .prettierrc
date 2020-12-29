@@ -1,0 +1,10 @@
+{
+    "useTabs": false,
+    "printWidth": 120, //줄 바꿈 할 폭의 길이
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "semi": true,
+    "singleQuote": true,
+    "endOfLine": "auto"
+  }
+  
