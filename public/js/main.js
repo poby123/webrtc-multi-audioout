@@ -10,6 +10,7 @@ let localStream = null;
  * All peer connections
  */
 let peers = {};
+let myName;
 
 // redirect if not https
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
@@ -42,20 +43,28 @@ const configuration = {
 function init(stream) {
   socket = io();
 
-  socket.on('initReceive', (socket_id) => {
-    console.log('INIT RECEIVE ' + socket_id);
-    addPeer(socket_id, false);
+  myName = prompt('이름을 입력해주세요 : ');
+  console.log('new-user : ', myName);
+  let localUserTag = document.getElementById('local-user-name');
+  localUserTag.innerText = myName;
+  document.title = `Translate | ${myName}`;
+  socket.emit('new-user', myName);
 
-    socket.emit('initSend', socket_id);
+  socket.on('initReceive', (socket_id, otherName) => {
+    console.log('INIT RECEIVE ' + socket_id + ' ' + otherName);
+    addPeer(socket_id, false, otherName);
+
+    socket.emit('initSend', socket_id, myName);
   });
 
-  socket.on('initSend', (socket_id) => {
+  socket.on('initSend', (socket_id, otherName) => {
     console.log('INIT SEND ' + socket_id);
-    addPeer(socket_id, true);
+    addPeer(socket_id, true, otherName);
   });
 
   socket.on('removePeer', (socket_id) => {
     console.log('removing peer ' + socket_id);
+
     removePeer(socket_id);
   });
 
@@ -106,7 +115,7 @@ function removePeer(socket_id) {
  *                  Set to true if the peer initiates the connection process.
  *                  Set to false if the peer receives the connection.
  */
-function addPeer(socket_id, am_initiator) {
+function addPeer(socket_id, am_initiator, name) {
   peers[socket_id] = new SimplePeer({
     initiator: am_initiator,
     stream: localStream,
@@ -121,13 +130,17 @@ function addPeer(socket_id, am_initiator) {
   });
 
   peers[socket_id].on('stream', (stream) => {
+    let nameTag = document.createElement('span');
+    nameTag.className = 'user-name';
+    nameTag.innerText = name;
+
     let newVid = document.createElement('video');
     newVid.srcObject = stream;
     newVid.id = socket_id;
     newVid.playsinline = false;
     newVid.autoplay = true;
 
-    let videoSection = document.querySelector('.videos');
+    let videoSection = document.querySelector('.section-videos');
     let videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
     videoContainer.id = `container_${socket_id}`;
@@ -136,6 +149,7 @@ function addPeer(socket_id, am_initiator) {
     videoSelector.id = `video_${socket_id}`;
 
     videoSection.appendChild(videoContainer);
+    videoContainer.appendChild(nameTag);
     videoContainer.appendChild(newVid);
     videoContainer.appendChild(videoSelector);
 
@@ -152,6 +166,10 @@ function addPeer(socket_id, am_initiator) {
     mute_option.text = '소리 끄기';
     videoSelector.appendChild(mute_option);
     videoSelector.addEventListener('change', handleSoundChange);
+
+    //set default, others video sound set muted.
+    newVid.muted = true;
+    videoSelector.value = 'mute';
   });
 }
 
@@ -232,7 +250,9 @@ function toggleMute() {
   for (let index in localStream.getAudioTracks()) {
     localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled;
     // muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
-    let buttonStatus = localStream.getAudioTracks()[index].enabled ? '/fonts/microphone.svg' : '/fonts/microphone-slash.svg';
+    let buttonStatus = localStream.getAudioTracks()[index].enabled
+      ? '/fonts/microphone.svg'
+      : '/fonts/microphone-slash.svg';
     let buttonImage = document.getElementById('muteButtonImage');
     buttonImage.src = buttonStatus;
   }

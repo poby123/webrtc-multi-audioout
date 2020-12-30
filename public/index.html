@@ -10,15 +10,17 @@
 </head>
 
 <body>
-    <section class="videos">
+    <section class="section-videos">
         <div class="local-video-container">
+            <span id="local-user-name" class="user-name"></span>
             <video id="localVideo" autoplay muted></video>
         </div>
         <!-- <div class="video-container">
-            <video id="test" src="/videos/2019_christmas.mp4" controls></video>
+            <span class="user-name">TEST</span>
+            <video id="test" poster="/images/background3.jpg" src="/videos/2019_christmas.mp4" controls></video>
             <select name="" id=""></select>
-        </div>
-         -->
+        </div> -->
+        
     </section>
     <section class="local-config" style="display:block">
         <div class="local-config-container">
@@ -26,7 +28,6 @@
                     src="/fonts/microphone.svg"></button>
 
             <div class="select">
-                <!-- <label for="audioSource">Audio input source: </label><select id="audioSource"></select> -->
                 <select id="audioSource"></select>
             </div>
 
@@ -34,7 +35,6 @@
                     src="/fonts/video.svg"></button>
 
             <div class="select">
-                <!-- <label for="videoSource">Video source: </label><select id="videoSource"></select> -->
                 <select id="videoSource"></select>
             </div>
         </div>
