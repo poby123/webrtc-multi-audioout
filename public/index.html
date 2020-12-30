@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Translate</title>
     <script lang="text/javascript" src="/socket.io/socket.io.js"></script>
     <script src="/simple-peer/simplepeer.min.js"></script>
     <link rel="stylesheet" href="/styles/index.css">
@@ -12,22 +14,28 @@
         <div class="local-video-container">
             <video id="localVideo" autoplay muted></video>
         </div>
+        <!-- <div class="video-container">
+            <video id="test" src="/videos/2019_christmas.mp4" controls></video>
+            <select name="" id=""></select>
+        </div>
+         -->
     </section>
     <section class="local-config" style="display:block">
         <div class="local-config-container">
-            <!-- <button id="switchButton" onclick="switchMedia()">Switch Camera</button> -->
-            <button id="muteButton" onclick="toggleMute()">Unmuted</button>
-            <button id="vidButton" onclick="toggleVid()">Video Enabled</button>
+            <button class="config-icon" id="muteButton" onclick="toggleMute()"><img id="muteButtonImage"
+                    src="/fonts/microphone.svg"></button>
+
             <div class="select">
-                <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+                <!-- <label for="audioSource">Audio input source: </label><select id="audioSource"></select> -->
+                <select id="audioSource"></select>
             </div>
 
-            <!-- <div class="select">
-                <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
-            </div> -->
+            <button class="config-icon" id="vidButton" onclick="toggleVid()"><img id="videoButtonImage"
+                    src="/fonts/video.svg"></button>
 
             <div class="select">
-                <label for="videoSource">Video source: </label><select id="videoSource"></select>
+                <!-- <label for="videoSource">Video source: </label><select id="videoSource"></select> -->
+                <select id="videoSource"></select>
             </div>
         </div>
     </section>

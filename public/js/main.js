@@ -231,7 +231,10 @@ function removeLocalStream() {
 function toggleMute() {
   for (let index in localStream.getAudioTracks()) {
     localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled;
-    muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
+    // muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
+    let buttonStatus = localStream.getAudioTracks()[index].enabled ? '/fonts/microphone.svg' : '/fonts/microphone-slash.svg';
+    let buttonImage = document.getElementById('muteButtonImage');
+    buttonImage.src = buttonStatus;
   }
 }
 /**
@@ -241,7 +244,10 @@ function toggleVid() {
   for (let index in localStream.getVideoTracks()) {
     console.log(localStream.getVideoTracks());
     localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
-    vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
+    // vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
+    let buttonStatus = localStream.getVideoTracks()[index].enabled ? '/fonts/video.svg' : '/fonts/video-slash.svg';
+    let buttonImage = document.getElementById('videoButtonImage');
+    buttonImage.src = buttonStatus;
   }
 }
 
@@ -319,16 +325,6 @@ function attachSinkId(element, sinkId) {
   }
 }
 
-function changeAudioDestination() {
-  const audioDestination = audioOutputSelect.value;
-  if (audioDestination === 'mute') {
-    videoElement.muted = true;
-  } else {
-    videoElement.muted = false;
-    attachSinkId(videoElement, audioDestination);
-  }
-}
-
 function gotStream(stream) {
   localStream = stream; // make stream available to console
   videoElement.srcObject = stream;
@@ -356,8 +352,8 @@ let constraints = {
 
 let start_i = 0;
 function start() {
-  if (localStream) {
-    localStream.stream.getTracks().forEach((track) => {
+  if (window.stream) {
+    window.stream.getTracks().forEach((track) => {
       track.stop();
     });
   }
