@@ -10,7 +10,6 @@ let localStream = null;
  * All peer connections
  */
 let peers = {};
-let socket_sound_config = {};
 
 // redirect if not https
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
@@ -81,6 +80,8 @@ function init(stream) {
  */
 function removePeer(socket_id) {
   let videoEl = document.getElementById(socket_id);
+  let videoSelector = document.getElementById(`video_${socket_id}`);
+  let videoContainer = document.getElementById(`container_${socket_id}`);
   if (videoEl) {
     const tracks = videoEl.srcObject.getTracks();
 
@@ -90,6 +91,8 @@ function removePeer(socket_id) {
 
     videoEl.srcObject = null;
     videoEl.parentNode.removeChild(videoEl);
+    videoContainer.removeChild(videoSelector);
+    videoContainer.parentNode.removeChild(videoContainer);
   }
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
@@ -123,35 +126,48 @@ function addPeer(socket_id, am_initiator) {
     newVid.id = socket_id;
     newVid.playsinline = false;
     newVid.autoplay = true;
-    newVid.className = 'vid';
 
-    newVid.onclick = () => openPictureMode(newVid);
-    newVid.ontouchstart = (e) => openPictureMode(newVid);
-    videos.appendChild(newVid);
+    let videoSection = document.querySelector('.videos');
+    let videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container';
+    videoContainer.id = `container_${socket_id}`;
 
-    
-    let container = document.querySelector('.sound_configs');
-    let selector = document.createElement('select');
-    selector.id = `video_${socket_id}`;
-    selector.onchange = handleSoundChange;
-    container.appendChild(selector);
+    let videoSelector = document.createElement('select');
+    videoSelector.id = `video_${socket_id}`;
+
+    videoSection.appendChild(videoContainer);
+    videoContainer.appendChild(newVid);
+    videoContainer.appendChild(videoSelector);
 
     current_deviceInfos.forEach((info) => {
       if (info.kind === 'audiooutput') {
         let option = document.createElement('option');
         option.value = info.deviceId;
         option.text = info.label || `speaker ${parent.length + 1}`;
-        selector.appendChild(option);
+        videoSelector.appendChild(option);
       }
     });
+    const mute_option = document.createElement('option');
+    mute_option.value = 'mute';
+    mute_option.text = '소리 끄기';
+    videoSelector.appendChild(mute_option);
+    videoSelector.addEventListener('change', handleSoundChange);
   });
 }
 
-function handleSoundChange(e){
+function handleSoundChange(e) {
+  console.log('handle sound change');
   let selector = document.getElementById(e.target.id);
   let target_id = e.target.id.slice(6);
+  console.log(target_id);
   let target = document.getElementById(target_id);
-  target.setSinkId(selector.value);
+
+  if (selector.value === 'mute') {
+    target.muted = true;
+  } else {
+    target.muted = false;
+    target.setSinkId(selector.value);
+  }
 }
 
 /**
@@ -161,46 +177,6 @@ function handleSoundChange(e){
 function openPictureMode(el) {
   console.log('opening pip');
   el.requestPictureInPicture();
-}
-
-/**
- * Switches the camera between user and environment. It will just enable the camera 2 cameras not supported.
- */
-function switchMedia() {
-  if (constraints.video.facingMode.ideal === 'user') {
-    constraints.video.facingMode.ideal = 'environment';
-  } else {
-    constraints.video.facingMode.ideal = 'user';
-  }
-
-  const tracks = localStream.getTracks();
-  console.log(tracks);
-  tracks.forEach(function (track) {
-    track.stop();
-  });
-
-  localVideo.srcObject = null;
-  navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-    for (let socket_id in peers) {
-      for (let index in peers[socket_id].streams[0].getTracks()) {
-        for (let index2 in stream.getTracks()) {
-          if (peers[socket_id].streams[0].getTracks()[index].kind === stream.getTracks()[index2].kind) {
-            peers[socket_id].replaceTrack(
-              peers[socket_id].streams[0].getTracks()[index],
-              stream.getTracks()[index2],
-              peers[socket_id].streams[0],
-            );
-            break;
-          }
-        }
-      }
-    }
-
-    localStream = stream;
-    localVideo.srcObject = stream;
-
-    updateButtons();
-  });
 }
 
 /**
@@ -252,8 +228,6 @@ function removeLocalStream() {
 /**
  * Enable/disable microphone
  */
-let mute = false;
-let show = true;
 function toggleMute() {
   for (let index in localStream.getAudioTracks()) {
     localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled;
@@ -265,6 +239,7 @@ function toggleMute() {
  */
 function toggleVid() {
   for (let index in localStream.getVideoTracks()) {
+    console.log(localStream.getVideoTracks());
     localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
     vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
   }
@@ -289,9 +264,8 @@ function updateButtons() {
 
 const videoElement = document.querySelector('#localVideo');
 const audioInputSelect = document.querySelector('select#audioSource');
-const audioOutputSelect = document.querySelector('select#audioOutput');
 const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
+const selectors = [audioInputSelect, videoSelect];
 let current_deviceInfos;
 
 function gotDevices(deviceInfos) {
@@ -311,16 +285,12 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind === 'audioinput') {
       option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`;
       audioInputSelect.appendChild(option);
-    } else if (deviceInfo.kind === 'audiooutput') {
-      option.text = deviceInfo.label || `speaker ${audioOutputSelect.length + 1}`;
-      audioOutputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'videoinput') {
       option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`;
       videoSelect.appendChild(option);
-    } else {
-      console.log('Some other kind of source/device: ', deviceInfo);
     }
   }
+
   selectors.forEach((select, selectorIndex) => {
     if (Array.prototype.slice.call(select.childNodes).some((n) => n.value === values[selectorIndex])) {
       select.value = values[selectorIndex];
@@ -351,7 +321,12 @@ function attachSinkId(element, sinkId) {
 
 function changeAudioDestination() {
   const audioDestination = audioOutputSelect.value;
-  attachSinkId(videoElement, audioDestination);
+  if (audioDestination === 'mute') {
+    videoElement.muted = true;
+  } else {
+    videoElement.muted = false;
+    attachSinkId(videoElement, audioDestination);
+  }
 }
 
 function gotStream(stream) {
@@ -371,10 +346,10 @@ function handleError(error) {
 let constraints = {
   video: {
     width: {
-      max: 300,
+      max: 1280,
     },
     height: {
-      max: 300,
+      max: 720,
     },
   },
 };
@@ -399,9 +374,8 @@ function start() {
   }
 }
 
-navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+// navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 start();
 audioInputSelect.onchange = start;
-audioOutputSelect.onchange = changeAudioDestination;
 
 videoSelect.onchange = start;

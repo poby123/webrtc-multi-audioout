@@ -1,20 +1,68 @@
-.containers {
-    display: grid;
-    grid-gap: 5px;
-    grid-template-columns: repeat(auto-fit, 1fr);
-    grid-template-rows: repeat(auto-fit, 300px);
+body {
+  margin: 0;
 }
-
-.container {
+.videos {
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 3px blue solid;
+}
+.local-video-container {
+  width: 30vw;
+  height: 30vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid red;
+}
+.video-container{
+    width: 30vw;
+    height: 30vh;
     display: flex;
+    flex-direction: column;
+    border: 1px solid red;
+}
+.videos video {
+  width: 100%;
+  height: 80%;
+  flex:1;
 }
 
-.vid {
-    flex: 0 1 auto;
-    height: 400px;
+/* local video config menu */
+.local-config {
+  position: relative;
+  width: 100%;
+  background-color: #1d608d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.local-config-container {
+  min-height: 10vh;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.local-config-container button {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: white;
+  flex: 1;
+  height: 100%;
+}
+.local-config-container button:hover {
+  cursor: pointer;
+}
+.select {
+  color: white;
+  flex: 1;
+  margin: 0 5;
 }
 
-.settings {
+/* .settings {
     background-color: #4CAF50;
     border: none;
     color: white;
@@ -25,4 +73,4 @@
     font-size: 14px;
     margin: 2px 2px;
     cursor: pointer;
-}
+} */
