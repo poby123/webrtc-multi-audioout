@@ -1,10 +1,9 @@
-const path = require('path')
-const express = require('express')
+const path = require('path');
+const express = require('express');
 
 module.exports = (app) => {
-
-    // redirect http traffic to https traffic
-    /*app.use('*', (req, res, next) => {
+  // redirect http traffic to https traffic
+  /*app.use('*', (req, res, next) => {
         if(!req.socket.encrypted){
             console.log('unsecure connection: redirecting..')
             res.redirect('https://' + req.headers.host + req.path)
@@ -13,6 +12,15 @@ module.exports = (app) => {
         }
     })*/
 
-    app.use(express.static(path.join(__dirname, '..','public')))
-    app.use(express.static(path.join(__dirname, '..','node_modules')))
-}
+//   app.use('*', (req, res, next) => {
+//     console.log('middleware');
+//     if (!req.secure) {
+//       res.redirect(`https://${req.headers.host}${req.path}`);
+//     } else {
+//       next();
+//     }
+//   });
+
+  app.use(express.static(path.join(__dirname, '..', 'public')));
+  app.use(express.static(path.join(__dirname, '..', 'node_modules')));
+};
