@@ -88,8 +88,15 @@ function init(stream) {
  * @param {String} socket_id
  */
 function removePeer(socket_id) {
+  if(streams[socket_id]){
+    if(socket_id == currentMaximize){
+      handleMinimize();
+    }
+    delete streams[socket_id];
+  }
+
   let videoEl = document.getElementById(socket_id);
-  let videoSelector = document.getElementById(`video_${socket_id}`);
+  let videoSelector = document.getElementById(`selector_${socket_id}`);
   let videoContainer = document.getElementById(`container_${socket_id}`);
   if (videoEl) {
     const tracks = videoEl.srcObject.getTracks();
@@ -106,6 +113,8 @@ function removePeer(socket_id) {
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
 }
+
+let streams = {};
 
 /**
  * Creates a new peer connection and sets the event listeners
@@ -130,28 +139,42 @@ function addPeer(socket_id, am_initiator, name) {
   });
 
   peers[socket_id].on('stream', (stream) => {
+    /* create name tag */
     let nameTag = document.createElement('span');
     nameTag.className = 'user-name';
     nameTag.innerText = name;
 
+    /* create video */
     let newVid = document.createElement('video');
     newVid.srcObject = stream;
+    streams[socket_id] = stream;
+    console.log('stream : ', stream);
     newVid.id = socket_id;
     newVid.playsinline = false;
     newVid.autoplay = true;
 
-    let videoSection = document.querySelector('.section-videos');
+    /* create container */
     let videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
     videoContainer.id = `container_${socket_id}`;
 
+    /* create selector */
     let videoSelector = document.createElement('select');
-    videoSelector.id = `video_${socket_id}`;
+    videoSelector.id = `selector_${socket_id}`;
 
+    /* create maximize button */
+    let maximizeButton = document.createElement('button');
+    maximizeButton.innerHTML = 'Maximize';
+    maximizeButton.id = `maximizeButton_${socket_id}`;
+    maximizeButton.addEventListener('click', handleMaximize);
+
+    /* append children */
+    let videoSection = document.querySelector('.section-videos');
     videoSection.appendChild(videoContainer);
     videoContainer.appendChild(nameTag);
     videoContainer.appendChild(newVid);
     videoContainer.appendChild(videoSelector);
+    videoContainer.appendChild(maximizeButton);
 
     current_deviceInfos.forEach((info) => {
       if (info.kind === 'audiooutput') {
@@ -161,6 +184,7 @@ function addPeer(socket_id, am_initiator, name) {
         videoSelector.appendChild(option);
       }
     });
+    /* add mute option to selector */
     const mute_option = document.createElement('option');
     mute_option.value = 'mute';
     mute_option.text = '소리 끄기';
@@ -173,10 +197,42 @@ function addPeer(socket_id, am_initiator, name) {
   });
 }
 
+let currentMaximize;
+
+function handleMaximize(e) {
+  let socket_id = e.currentTarget.id.replace('maximizeButton_', '');
+  currentMaximize = socket_id;
+  let video = document.getElementById(socket_id).cloneNode(true);
+  let targetStream = streams[socket_id];
+  video.srcObject = targetStream;
+
+  let selector = document.querySelector(`#selector_${socket_id}`).cloneNode(true);
+  let minimizeButton = document.createElement('button');
+  minimizeButton.innerHTML = 'Minimize';
+  minimizeButton.addEventListener('click', handleMinimize);
+
+  let mainVideoContainer = document.querySelector('.main-video-container');
+  mainVideoContainer.innerHTML = '';
+  mainVideoContainer.appendChild(video);
+  mainVideoContainer.appendChild(selector);
+  mainVideoContainer.appendChild(minimizeButton);
+  mainVideoContainer.setAttribute('style', 'display: flex');
+
+  document.body.scrollTop = 0; // For Safari
+  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+}
+
+function handleMinimize(){
+  currentMaximize = null;
+  let mainVideoContainer = document.querySelector('.main-video-container');
+  mainVideoContainer.innerHTML = '';
+  mainVideoContainer.setAttribute('style', 'display: none');
+}
+
 function handleSoundChange(e) {
   console.log('handle sound change');
   let selector = document.getElementById(e.target.id);
-  let target_id = e.target.id.slice(6);
+  let target_id = e.target.id.replace('selector_', '');
   console.log(target_id);
   let target = document.getElementById(target_id);
 
@@ -198,10 +254,17 @@ function openPictureMode(el) {
 }
 
 /**
- * Enable screen share
+ * Switches the camera between user and environment. It will just enable the camera 2 cameras not supported.
  */
-function setScreen() {
-  navigator.mediaDevices.getDisplayMedia().then((stream) => {
+function switchMedia() {
+  const tracks = localStream.getTracks();
+
+  tracks.forEach(function (track) {
+    track.stop();
+  });
+
+  localVideo.srcObject = null;
+  navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
     for (let socket_id in peers) {
       for (let index in peers[socket_id].streams[0].getTracks()) {
         for (let index2 in stream.getTracks()) {
@@ -216,12 +279,12 @@ function setScreen() {
         }
       }
     }
-    localStream = stream;
 
-    localVideo.srcObject = localStream;
-    socket.emit('removeUpdatePeer', '');
+    localStream = stream;
+    videoElement.srcObject = stream;
+
+    updateButtons();
   });
-  updateButtons();
 }
 
 /**
@@ -276,10 +339,18 @@ function toggleVid() {
  */
 function updateButtons() {
   for (let index in localStream.getVideoTracks()) {
-    vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
+    // vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
+    let buttonStatus = localStream.getVideoTracks()[index].enabled ? '/fonts/video.svg' : '/fonts/video-slash.svg';
+    let buttonImage = document.getElementById('videoButtonImage');
+    buttonImage.src = buttonStatus;
   }
   for (let index in localStream.getAudioTracks()) {
-    muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
+    // muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
+    let buttonStatus = localStream.getAudioTracks()[index].enabled
+      ? '/fonts/microphone.svg'
+      : '/fonts/microphone-slash.svg';
+    let buttonImage = document.getElementById('muteButtonImage');
+    buttonImage.src = buttonStatus;
   }
 }
 /////////////////////////////////////////////////////////////////
@@ -346,6 +417,7 @@ function attachSinkId(element, sinkId) {
 }
 
 function gotStream(stream) {
+  window.stream = stream;
   localStream = stream; // make stream available to console
   videoElement.srcObject = stream;
   // Refresh button list in case labels have become available
@@ -386,12 +458,12 @@ function start() {
     navigator.mediaDevices.getUserMedia(constraints).then(init).then(gotStream).then(gotDevices).catch(handleError);
     start_i++;
   } else {
-    navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+    // navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+    switchMedia();
   }
 }
 
 // navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 start();
 audioInputSelect.onchange = start;
-
 videoSelect.onchange = start;

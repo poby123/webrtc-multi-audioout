@@ -1,7 +1,26 @@
 body {
   margin: 0;
 }
-/*  */
+/* section-main-video */
+.section-main-video {
+  border: 1px solid green;
+}
+
+.main-video-container {
+  width: 100vw;
+  height: 90vh;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-video-container video {
+  width: 90%;
+  height: 90%;
+}
+
+/* videos section */
 .section-videos {
   width: 100%;
   min-height: 90vh;
@@ -15,8 +34,8 @@ body {
 
 /* local video container*/
 .local-video-container {
-  width: 30vw;
-  height: 30vh;
+  width: 30%;
+  height: 30%;
   display: flex;
   flex-direction: column;
   border: 1px solid red;
@@ -24,15 +43,15 @@ body {
 
 /* others video container*/
 .video-container {
-  width: 30vw;
-  height: 30vh;
+  width: 30%;
+  height: 30%;
   display: flex;
   flex-direction: column;
   border: 1px solid red;
 }
 
-.user-name{
-  border:1px solid blue;
+.user-name {
+  font-weight: bold;
   text-align: center;
 }
 
@@ -74,7 +93,7 @@ body {
 .local-config-container button:hover {
   cursor: pointer;
 }
-.config-icon img{
+.config-icon img {
   width: 30px;
   height: 30px;
 }
