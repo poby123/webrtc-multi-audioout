@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translate Platform</title>
+    <link rel="stylesheet" href="/styles/index.css">
+</head>
+
+<body>
+    <section class="section-header">
+        <div class="container">
+            <button class="user-button icon">
+            </button>
+        </div>
+    </section>
+    <section class="sectionA">
+        <div class="container noselect">
+            <h1>Translate Platfrom</h1>
+            <div class="sub-container">
+                <button id="create-room">새로운 방</button>
+                <button id="join-room">참여하기</button>
+            </div>
+        </div>
+    </section>
+    <script>
+        let userBtn = document.getElementsByClassName('user-button');
+        let createBtn = document.getElementById('create-room');
+        let joinBtn = document.getElementById('join-room');
+
+        userBtn.addEventListener('click', () => {
+            
+        });
+
+        createBtn.addEventListener('click', () => {
+            location.href = "/create";
+        });
+
+        joinBtn.addEventListener('click', () => {
+            const id = prompt('참여할 방의 아이디를 입력해주세요: ');
+            location.href = `/rooms?id=${id}`;
+        });
+
+    </script>
+</body>
+
+</html>

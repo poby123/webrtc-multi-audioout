@@ -1,0 +1,116 @@
+body {
+  margin: 0;
+}
+/* section-main-video */
+.section-main-video {
+  border: 1px solid green;
+}
+
+.main-video-container {
+  width: 100vw;
+  height: 90vh;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-video-container video {
+  width: 90%;
+  height: 90%;
+}
+
+/* videos section */
+.section-videos {
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* border: 3px blue solid; */
+  flex-wrap: wrap;
+  margin-bottom: 10vh;
+}
+
+/* local video container*/
+.local-video-container {
+  width: 30%;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid red;
+}
+
+/* others video container*/
+.video-container {
+  width: 30%;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid red;
+}
+
+.user-name {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* whole video */
+.section-videos video {
+  width: 100%;
+  height: 80%;
+  flex: 1;
+}
+
+/* 
+* local video config menu 
+*/
+.local-config {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  /* background-color: #1d608d; */
+  background-color: cornflowerblue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.local-config-container {
+  min-height: 10vh;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.local-config-container button {
+  display: inline-block;
+  background: none;
+  border: none;
+  flex: 1;
+  height: 100%;
+  outline: none;
+}
+.local-config-container button:hover {
+  cursor: pointer;
+}
+.config-icon img {
+  width: 30px;
+  height: 30px;
+}
+.select {
+  flex: 1;
+  margin: 0 5;
+}
+
+/* .settings {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 2px;
+    cursor: pointer;
+} */
