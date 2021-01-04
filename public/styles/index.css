@@ -37,12 +37,17 @@ button {
   border: none;
   outline: none;
 }
+a {
+  text-decoration: none;
+}
 button:hover {
   cursor: pointer;
 }
 .icon {
   display: inline-block;
   background-size: cover;
+  width: 35px;
+  height: 35px;
 }
 .noselect {
   -webkit-touch-callout: none;
@@ -72,25 +77,60 @@ button:hover {
   align-items: flex-end;
   /* border: 1px solid green; */
 }
-.section-header .user-button {
-  width: 35px;
-  height: 35px;
-  background-image: url('/fonts/user-circle.svg');
+.section-header .unsigned-user-button {
+  /* background-image: url(''); */
   filter: invert(100%);
+}
+.section-header .signed-user-button {
+  border-radius: 50%;
 }
 
 /* section user-menu */
-.section-user-menu{
+.section-user-menu {
   position: absolute;
   display: none;
-  top: 0;
+  top: 20vh;
   right: 0;
-  height:100vh;
-  width: 40vw;
-  border: 2px solid yellow;
-  background-color: yellow;
+  height: 20vh;
+  width: 10em;
+  background-color: #d456a0;
+  color: white;
+}
+.section-user-menu .container {
+  width: 80%;
+  margin: 0.2em auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
+.section-user-menu .profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.section-user-menu .user-name {
+  margin-right: 1em;
+  font-family: 'Nanum Gothic';
+}
+.section-user-menu .signout {
+  filter: invert(100%);
+}
+.section-user-menu .button-container {
+  width: 100%;
+  justify-content: flex-start;
+  /* border: 1px solid white; */
+}
+.section-user-menu h2 {
+  font-family: 'BalooDa2';
+}
+.section-user-menu .oauth-image {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
 
 /* sectionA */
 .sectionA {
