@@ -57,7 +57,7 @@ button:hover {
 .section-header {
   position: fixed;
   top: 0;
-  height: 10vh;
+  height: 20vh;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -72,14 +72,25 @@ button:hover {
   align-items: flex-end;
   /* border: 1px solid green; */
 }
-
-
 .section-header .user-button {
   width: 35px;
   height: 35px;
   background-image: url('/fonts/user-circle.svg');
   filter: invert(100%);
 }
+
+/* section user-menu */
+.section-user-menu{
+  position: absolute;
+  display: none;
+  top: 0;
+  right: 0;
+  height:100vh;
+  width: 40vw;
+  border: 2px solid yellow;
+  background-color: yellow;
+}
+
 
 /* sectionA */
 .sectionA {
