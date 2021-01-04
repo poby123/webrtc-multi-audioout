@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Translate Platform</title>
+    <title><%=title%></title>
     <link rel="stylesheet" href="/styles/index.css">
 </head>
 
@@ -27,21 +27,19 @@
                     </span>
                     <a href="/auth/signout"><img src="/fonts/sign-out-alt.svg" class="icon signout" alt=""></a>
                 </div>
-
-
-                <%}else{ %>
-                    <h2>Sign in</h2>
-                    <div class="button-container">
-                        <a href="/auth/google">
-                            <img class="oauth-image" src="/images/google.png" alt="google login">
-                        </a>
-                    </div>
-                    <%}%>
+            <%}else{ %>
+                <h2>Sign in</h2>
+                <div class="button-container">
+                    <a href="/auth/google">
+                        <img class="oauth-image" src="/images/google.png" alt="google login">
+                    </a>
+                </div>
+            <%}%>
         </div>
     </section>
     <section class="sectionA">
         <div class="container noselect">
-            <h1>Translate Platform</h1>
+            <h1><%=title%></h1>
             <div class="sub-container">
                 <button id="create-room">새로운 방</button>
                 <button id="join-room">참여하기</button>
@@ -50,39 +48,50 @@
     </section>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
+
         let userBtn = $('#user-button');
         let createBtn = $('#create-room');
         let joinBtn = $('#join-room');
 
-        let ASection = $('.sectionA');
+        let ASection = $('.sectionA').not('button');
         let userMenuSection = $('.section-user-menu');
 
         let showUserMenu = false;
 
+        function toggleUserMenu() {
+            userMenuSection.animate({ width: 'toggle' });
+            showUserMenu = !showUserMenu;
+        }
+
         createBtn.on('click', () => {
-            location.href = "/rooms/create";
+            if ('<%=user%>') {
+                location.href = "/rooms/create";
+            } else {
+                alert('로그인이 필요한 서비스입니다.');
+                if (!showUserMenu) {
+                    toggleUserMenu();
+                }
+            }
         });
 
         joinBtn.on('click', () => {
-            const id = prompt('참여할 방의 아이디를 입력해주세요: ');
-            console.log(id);
-            if (id) {
-                location.href = `/rooms/join?id=${id}`;
+            if ('<%=user%>') {
+                const id = prompt('참여할 방의 아이디를 입력해주세요: ');
+                console.log(id);
+                if (id) {
+                    location.href = `/rooms/join?id=${id}`;
+                }
+            } else {
+                alert('로그인이 필요한 서비스입니다.');
+                if (!showUserMenu) {
+                    toggleUserMenu();
+                }
             }
         });
 
         userBtn.on('click', () => {
-            console.log('user button click');
-            userMenuSection.animate({ width: 'toggle' });
-            showUserMenu = !showUserMenu;
+            toggleUserMenu();
         });
-
-        ASection.on('click', () => {
-            if (showUserMenu) {
-                userMenuSection.animate({ width: 'toggle' });
-                showUserMenu = !showUserMenu;
-            }
-        })
 
     </script>
 </body>
