@@ -65,7 +65,7 @@
 
         createBtn.on('click', () => {
             if ('<%=user%>') {
-                location.href = "/rooms/create";
+                location.href = `/?type=create`;
             } else {
                 alert('로그인이 필요한 서비스입니다.');
                 if (!showUserMenu) {
@@ -79,7 +79,7 @@
                 const id = prompt('참여할 방의 아이디를 입력해주세요: ');
                 console.log(id);
                 if (id) {
-                    location.href = `/rooms/join?id=${id}`;
+                    location.href = `/?type=join&id=${id}`;
                 }
             } else {
                 alert('로그인이 필요한 서비스입니다.');

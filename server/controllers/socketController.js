@@ -1,17 +1,35 @@
-peers = {};
 
+/*
+Uncaught DOMException: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 
+Failed to set remote answer sdp: Called in wrong state: kHaveRemoteOffer
+
+Cannot signal after peer is destroyed
+
+Uncaught DOMException: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 
+Failed to set remote answer sdp: Called in wrong state: kStable
+
+simplepeer.min.js:6 Uncaught Error: Connection failed.
+    at p._onConnectionStateChange (simplepeer.min.js:6)
+    at RTCPeerConnection._pc.onconnectionstatechange (simplepeer.min.js:6)
+*/
+
+peers = {};
+rooms = {};
+//peers -> roomId -> socket_id 
 module.exports = (io) => {
   io.on('connect', (socket) => {
     console.log('a client is connected : ', socket.id);
     // Initiate the connection process as soon as the client connects
-    peers[socket.id] = socket;
-
-    socket.on('new-user', (username) => {
-    //   console.log('server new-user : ', username);
     
-      // Asking all other clients to setup the peer connection receiver
+    socket.on('new-user', (username, roomId) => {
+      peers[socket.id] = socket;
+      rooms[socket.id] = roomId;
+      socket.join(roomId);
+    
+      // Asking all other clients in same room to setup the peer connection receiver
       for (let id in peers) {
         if (id === socket.id) continue;
+        if(rooms[socket.id] != rooms[id]) continue;
         console.log('sending init receive to ' + socket.id);
         peers[id].emit('initReceive', socket.id, username);
       }
@@ -45,6 +63,7 @@ module.exports = (io) => {
       console.log('socket disconnected ' + socket.id);
 
       socket.broadcast.emit('removePeer', socket.id);
+      delete peers[socket.id];
       delete peers[socket.id];
     });
   });

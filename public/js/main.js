@@ -1,21 +1,25 @@
-/**
- * Socket.io socket
- */
+/* Socket.io socket */
 let socket;
-/**
- * The stream object used to send media
- */
 let localStream = null;
-/**
- * All peer connections
- */
 let peers = {};
-let myName;
+
+/* parse data from url */
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const roomId = urlParams.get('id');
+const myName = document.querySelector('#info-user').value;
+
+/* media resources */
+const videoElement = document.querySelector('#localVideo');
+const audioInputSelect = document.querySelector('select#audioSource');
+const videoSelect = document.querySelector('select#videoSource');
+const selectors = [audioInputSelect, videoSelect];
+
+let current_deviceInfos;
+let currentMaximize;
 
 // redirect if not https
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
-
-//////////// CONFIGURATION //////////////////
 
 /**
  * RTCPeerConnection configuration
@@ -34,8 +38,19 @@ const configuration = {
     },
   ],
 };
-
-/////////////////////////////////////////////////////////
+/**
+ * UserMedia constraints
+ */
+const constraints = {
+  video: {
+    width: {
+      max: 1280,
+    },
+    height: {
+      max: 720,
+    },
+  },
+};
 
 /**
  * initialize the socket connections
@@ -43,12 +58,12 @@ const configuration = {
 function init(stream) {
   socket = io();
 
-  myName = prompt('이름을 입력해주세요 : ');
-  console.log('new-user : ', myName);
+  // myName = prompt('이름을 입력해주세요 : ');
+  // console.log('new-user : ', myName);
   let localUserTag = document.getElementById('local-user-name');
   localUserTag.innerText = myName;
-  document.title = `Translate | ${myName}`;
-  socket.emit('new-user', myName);
+  document.title = `Translate | ${roomId}`;
+  socket.emit('new-user', myName, roomId);
 
   socket.on('initReceive', (socket_id, otherName) => {
     console.log('INIT RECEIVE ' + socket_id + ' ' + otherName);
@@ -88,8 +103,8 @@ function init(stream) {
  * @param {String} socket_id
  */
 function removePeer(socket_id) {
-  if(streams[socket_id]){
-    if(socket_id == currentMaximize){
+  if (streams[socket_id]) {
+    if (socket_id == currentMaximize) {
       handleMinimize();
     }
     delete streams[socket_id];
@@ -119,10 +134,7 @@ let streams = {};
 /**
  * Creates a new peer connection and sets the event listeners
  * @param {String} socket_id
- *                 ID of the peer
  * @param {Boolean} am_initiator
- *                  Set to true if the peer initiates the connection process.
- *                  Set to false if the peer receives the connection.
  */
 function addPeer(socket_id, am_initiator, name) {
   peers[socket_id] = new SimplePeer({
@@ -197,8 +209,6 @@ function addPeer(socket_id, am_initiator, name) {
   });
 }
 
-let currentMaximize;
-
 function handleMaximize(e) {
   let socket_id = e.currentTarget.id.replace('maximizeButton_', '');
   currentMaximize = socket_id;
@@ -222,7 +232,7 @@ function handleMaximize(e) {
   document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
 
-function handleMinimize(){
+function handleMinimize() {
   currentMaximize = null;
   let mainVideoContainer = document.querySelector('.main-video-container');
   mainVideoContainer.innerHTML = '';
@@ -242,15 +252,6 @@ function handleSoundChange(e) {
     target.muted = false;
     target.setSinkId(selector.value);
   }
-}
-
-/**
- * Opens an element in Picture-in-Picture mode
- * @param {HTMLVideoElement} el video element to put in pip mode
- */
-function openPictureMode(el) {
-  console.log('opening pip');
-  el.requestPictureInPicture();
 }
 
 /**
@@ -353,17 +354,6 @@ function updateButtons() {
     buttonImage.src = buttonStatus;
   }
 }
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-
-const videoElement = document.querySelector('#localVideo');
-const audioInputSelect = document.querySelector('select#audioSource');
-const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, videoSelect];
-let current_deviceInfos;
 
 function gotDevices(deviceInfos) {
   console.log(deviceInfos);
@@ -395,52 +385,16 @@ function gotDevices(deviceInfos) {
   });
 }
 
-function attachSinkId(element, sinkId) {
-  if (typeof element.sinkId !== 'undefined') {
-    element
-      .setSinkId(sinkId)
-      .then(() => {
-        console.log(`Success, audio output device attached: ${sinkId}`);
-      })
-      .catch((error) => {
-        let errorMessage = error;
-        if (error.name === 'SecurityError') {
-          errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-        }
-        console.error(errorMessage);
-        // Jump back to first output device in the list as it's the default.
-        audioOutputSelect.selectedIndex = 0;
-      });
-  } else {
-    console.warn('Browser does not support output device selection.');
-  }
-}
-
 function gotStream(stream) {
   window.stream = stream;
   localStream = stream; // make stream available to console
   videoElement.srcObject = stream;
-  // Refresh button list in case labels have become available
-  return navigator.mediaDevices.enumerateDevices();
+  return navigator.mediaDevices.enumerateDevices(); // Refresh button list in case labels have become available
 }
 
 function handleError(error) {
   console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
-
-/**
- * UserMedia constraints
- */
-let constraints = {
-  video: {
-    width: {
-      max: 1280,
-    },
-    height: {
-      max: 720,
-    },
-  },
-};
 
 let start_i = 0;
 function start() {
@@ -458,12 +412,10 @@ function start() {
     navigator.mediaDevices.getUserMedia(constraints).then(init).then(gotStream).then(gotDevices).catch(handleError);
     start_i++;
   } else {
-    // navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
     switchMedia();
   }
 }
 
-// navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 start();
 audioInputSelect.onchange = start;
 videoSelect.onchange = start;

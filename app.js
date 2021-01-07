@@ -1,18 +1,34 @@
 var createError = require('http-errors');
+const fs = require('fs');
+const https = require('https');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var passport = require('passport');
 var session = require('express-session');
-var session_config = require('./server/config/session');
 
+var session_config = require('./server/config/session');
+let socketController = require('./server/controllers/socketController');
+
+// https server options
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem'), 'utf-8'),
+  cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'), 'utf-8'),
+}; 
+
+// app, server
+let app = express();
+let server = https.createServer(options, app);
+let io = require('socket.io')(server);
+
+socketController(io);
+
+// routers
 var indexRouter = require('./server/routes/index');
-var roomsRouter = require('./server/routes/rooms');
 var authRouter = require('./server/routes/auth');
 
-var app = express();
-
+// session
 app.use(session(session_config));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -28,7 +44,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/rooms', roomsRouter);
 app.use('/auth', authRouter);
 
 // catch 404 and forward to error handler
@@ -47,4 +62,6 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+
+exports.app = app;
+exports.server = server;
