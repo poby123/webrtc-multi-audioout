@@ -17,6 +17,7 @@ const selectors = [audioInputSelect, videoSelect];
 
 let current_deviceInfos;
 let currentMaximize;
+let showConfigModal = false;
 
 // redirect if not https
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
@@ -313,7 +314,6 @@ function removeLocalStream() {
 function toggleMute() {
   for (let index in localStream.getAudioTracks()) {
     localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled;
-    // muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
     let buttonStatus = localStream.getAudioTracks()[index].enabled
       ? '/fonts/microphone.svg'
       : '/fonts/microphone-slash.svg';
@@ -328,10 +328,33 @@ function toggleVid() {
   for (let index in localStream.getVideoTracks()) {
     console.log(localStream.getVideoTracks());
     localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
-    // vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
     let buttonStatus = localStream.getVideoTracks()[index].enabled ? '/fonts/video.svg' : '/fonts/video-slash.svg';
     let buttonImage = document.getElementById('videoButtonImage');
     buttonImage.src = buttonStatus;
+  }
+}
+
+/**
+ * Handle exit button event
+ */
+function exit() {
+  const result = confirm('회의를 나가시겠습니까?');
+  if (result) {
+    location.replace('/');
+  }
+}
+
+/**
+ * Handle toggle config modal window
+ */
+function toggleConfig() {
+  let configModal = document.querySelector('.local-config-modal');
+
+  showConfigModal = !showConfigModal;
+  if (showConfigModal) {
+    configModal.setAttribute('style', 'display:flex');
+  } else {
+    configModal.setAttribute('style', 'display:none');
   }
 }
 

@@ -32,20 +32,33 @@
             <button class="config-icon" id="muteButton" onclick="toggleMute()"><img id="muteButtonImage"
                     src="/fonts/microphone.svg"></button>
 
-            <div class="select">
-                <select id="audioSource"></select>
-            </div>
+            <button class="config-icon" id="exitButton" onclick="exit()"><img id="exitButtonImage"
+                    src="/fonts/times.svg" />
+
+            </button>
 
             <button class="config-icon" id="vidButton" onclick="toggleVid()"><img id="videoButtonImage"
                     src="/fonts/video.svg"></button>
 
+            <button class="config-icon" id="configButton" onclick="toggleConfig()"><img id="configButtonImage"
+                    src="/fonts/cog.svg"></button>
+
+        </div>
+    </section>
+    <section class="local-config-modal">
+        <div class="container">
             <div class="select">
+                <span>비디오 설정 : </span><br>
                 <select id="videoSource"></select>
+            </div>
+            <div class="select">
+                <span>마이크 : </span><br>
+                <select id="audioSource"></select>
             </div>
         </div>
     </section>
     <section class="info">
-        <input type="hidden" id="info-user" value="<%=user%>"/>
+        <input type="hidden" id="info-user" value="<%=user%>" />
     </section>
     <script lang="text/javascript" src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"
@@ -53,7 +66,6 @@
         crossorigin="anonymous"></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src='/js/main.js' async></script>
-    <!-- <script src="/js/test.js"></script> -->
 </body>
 
 </html>

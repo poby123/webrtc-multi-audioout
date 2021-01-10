@@ -1,9 +1,6 @@
 body {
   margin: 0;
-}
-/* section-main-video */
-.section-main-video {
-  border: 1px solid green;
+  background-color: black;
 }
 
 .main-video-container {
@@ -38,7 +35,7 @@ body {
   height: 30%;
   display: flex;
   flex-direction: column;
-  border: 1px solid red;
+  border: 1px solid white;
 }
 
 /* others video container*/
@@ -47,12 +44,13 @@ body {
   height: 30%;
   display: flex;
   flex-direction: column;
-  border: 1px solid red;
+  border: 1px solid white;
 }
 
 .user-name {
   font-weight: bold;
   text-align: center;
+  color: white;
 }
 
 /* whole video */
@@ -70,7 +68,7 @@ body {
   bottom: 0;
   width: 100%;
   /* background-color: #1d608d; */
-  background-color: cornflowerblue;
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,38 +77,73 @@ body {
 .local-config-container {
   min-height: 10vh;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
+  width: 20%;
+  margin-left: auto;
+  margin-right: auto;
 }
 .local-config-container button {
   display: inline-block;
   background: none;
   border: none;
-  flex: 1;
   height: 100%;
   outline: none;
+  /* border: 2px solid red; */
+  background-color: rgb(219, 98, 144);
+  border-radius: 50%;
+  padding: 1em 1.1em;
+  margin-left: auto;
+  margin-right: auto;
 }
 .local-config-container button:hover {
   cursor: pointer;
 }
 .config-icon img {
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
+  filter: invert(100%);
 }
-.select {
-  flex: 1;
-  margin: 0 5;
+.local-config-modal {
+  position: absolute;
+  display: none;
+  width: 500px;
+  height: 400px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background-color: white;
+  border-radius: 20px;
+}
+.local-config-modal .container {
+  display: flex;
+  width: 90%;
+  height: 90%;
+  margin:auto;
+  /* border: 1px solid blue; */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* .settings {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 2px 2px;
-    cursor: pointer;
-} */
+.local-config-modal .select {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.local-config-modal .select span{
+  color : rgb(6, 85, 6);
+}
+
+.local-config-modal .select select{
+  height: 1.5em;
+  border:none;
+  outline:none;
+  border-bottom: 1px solid black;
+}
