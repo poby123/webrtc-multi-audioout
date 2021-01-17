@@ -22,9 +22,10 @@ router.get('/', function (req, res) {
 
   if (type == 'join' && roomId) {
     if (checkSignin(req)) {
-      res.render('rtc', { username: req.user.displayName, userid: req.user.id, profile: req.user.photos[0].value });
+      const user = req.user;
+      res.render('rtc', { username: user.displayName, userid: user.id, profile: user.photos[0].value });
     } else {
-      res.redirect('/');
+      res.render('rtc', { username: '', userid: '', profile: '' });
     }
   } else if (type == 'create') {
     if (checkSignin(req)) {

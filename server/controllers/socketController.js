@@ -31,7 +31,8 @@ module.exports = (io) => {
         console.log('request to 방장');
         if (creators[roomId] && creators[roomId].socket_id && peers[creators[roomId].socket_id]) {
           const creator_sockets = creators[roomId].socket_id;
-          peers[creator_sockets[-1]].emit('requestJoin', userInfo, socket.id);
+          const len = creator_sockets.length;
+          peers[creator_sockets[len - 1]].emit('requestJoin', userInfo, socket.id);
         }
       }
     });

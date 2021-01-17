@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%=title%></title>
+    <title>
+        <%=title%>
+    </title>
     <link rel="stylesheet" href="/styles/index.css">
 </head>
 
@@ -27,19 +29,21 @@
                     </span>
                     <a href="/auth/signout"><img src="/fonts/sign-out-alt.svg" class="icon signout" alt=""></a>
                 </div>
-            <%}else{ %>
-                <h2>Sign in</h2>
-                <div class="button-container">
-                    <a href="/auth/google">
-                        <img class="oauth-image" src="/images/google.png" alt="google login">
-                    </a>
-                </div>
-            <%}%>
+                <%}else{ %>
+                    <h2>Sign in</h2>
+                    <div class="button-container">
+                        <a href="/auth/google">
+                            <img class="oauth-image" src="/images/google.png" alt="google login">
+                        </a>
+                    </div>
+                    <%}%>
         </div>
     </section>
     <section class="sectionA">
         <div class="container noselect">
-            <h1><%=title%></h1>
+            <h1>
+                <%=title%>
+            </h1>
             <div class="sub-container">
                 <button id="create-room">새로운 방</button>
                 <button id="join-room">참여하기</button>
@@ -75,17 +79,10 @@
         });
 
         joinBtn.on('click', () => {
-            if ('<%=user%>') {
-                const id = prompt('참여할 방의 아이디를 입력해주세요: ');
-                console.log(id);
-                if (id) {
-                    location.href = `/?type=join&id=${id}`;
-                }
-            } else {
-                alert('로그인이 필요한 서비스입니다.');
-                if (!showUserMenu) {
-                    toggleUserMenu();
-                }
+            const id = prompt('참여할 방의 아이디를 입력해주세요: ');
+            console.log(id);
+            if (id) {
+                location.href = `/?type=join&id=${id}`;
             }
         });
 

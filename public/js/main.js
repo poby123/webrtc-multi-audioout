@@ -7,10 +7,28 @@ let peers = {};
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const roomId = urlParams.get('id');
-const myName = document.querySelector('#info-user-name').value;
-const myId = document.querySelector('#info-user-id').value;
-const myProfile = document.querySelector('#info-user-profile').value;
-const myInfo = { name: myName, id: myId, profile: myProfile };
+let myName = document.querySelector('#info-user-name').value;
+let myId = document.querySelector('#info-user-id').value;
+let myProfile = document.querySelector('#info-user-profile').value;
+let myInfo;
+
+function makeid(length) {
+  var result = '';
+  var characters = '0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
+if (!myName) {
+  let name = prompt('참여할 이름을 정해주세요 : ');
+  myName = name;
+  myProfile = '/images/google.png';
+  myId = makeid(30);
+}
+myInfo = { name: myName, id: myId, profile: myProfile };
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
@@ -62,8 +80,6 @@ const constraints = {
 function init(stream) {
   socket = io();
 
-  // myName = prompt('이름을 입력해주세요 : ');
-  // console.log('new-user : ', myName);
   let localUserTag = document.getElementById('local-user-name');
   localUserTag.innerText = myInfo.name;
   document.title = `Translate | ${roomId}`;
