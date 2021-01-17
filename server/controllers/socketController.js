@@ -1,37 +1,55 @@
+peers = {}; //peers[socket.id] = socket
+rooms = {}; //rooms[socket.id] = roomId
+creators = {}; // creator[roomId] = { socket_id : [socket.id], userInfo : userInfo}
 
-/*
-Uncaught DOMException: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 
-Failed to set remote answer sdp: Called in wrong state: kHaveRemoteOffer
-
-Cannot signal after peer is destroyed
-
-Uncaught DOMException: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': 
-Failed to set remote answer sdp: Called in wrong state: kStable
-
-simplepeer.min.js:6 Uncaught Error: Connection failed.
-    at p._onConnectionStateChange (simplepeer.min.js:6)
-    at RTCPeerConnection._pc.onconnectionstatechange (simplepeer.min.js:6)
-*/
-
-peers = {};
-rooms = {};
-//peers -> roomId -> socket_id 
 module.exports = (io) => {
   io.on('connect', (socket) => {
     console.log('a client is connected : ', socket.id);
-    // Initiate the connection process as soon as the client connects
-    
-    socket.on('new-user', (username, roomId) => {
+
+    socket.on('init', (userInfo, roomId) => {
       peers[socket.id] = socket;
-      rooms[socket.id] = roomId;
-      socket.join(roomId);
-    
-      // Asking all other clients in same room to setup the peer connection receiver
-      for (let id in peers) {
-        if (id === socket.id) continue;
-        if(rooms[socket.id] != rooms[id]) continue;
-        console.log('sending init receive to ' + socket.id);
-        peers[id].emit('initReceive', socket.id, username);
+
+      console.log(creators[roomId]);
+      if (!creators[roomId]) {
+        console.log('create 방장');
+        creators[roomId] = { socket_id: [socket.id], userInfo: userInfo };
+        rooms[socket.id] = roomId;
+        socket.join(roomId);
+      } else if (creators[roomId] && creators[roomId].userInfo.id == userInfo.id) {
+        console.log('add 방장');
+        creators[roomId].socket_id.push(socket.id);
+        rooms[socket.id] = roomId;
+        socket.join(roomId);
+
+        for (let id in peers) {
+          if (id === socket.id) continue;
+          if (rooms[id] != rooms[socket.id]) continue;
+          console.log('sending init receive to ' + socket.id);
+          peers[id].emit('initReceive', socket.id, userInfo);
+        }
+      } else {
+        console.log('request to 방장');
+        if (creators[roomId] && creators[roomId].socket_id && peers[creators[roomId].socket_id]) {
+          const creator_sockets = creators[roomId].socket_id;
+          peers[creator_sockets[-1]].emit('requestJoin', userInfo, socket.id);
+        }
+      }
+    });
+
+    socket.on('requestJoin', (userInfo, result, otherId, roomId) => {
+      if (result) {
+        rooms[otherId] = roomId;
+        peers[otherId].join(roomId);
+        // peers[otherId].emit('responseJoin');
+
+        for (let id in peers) {
+          if (id === otherId) continue;
+          if (rooms[id] != rooms[otherId]) continue;
+          console.log('sending init receive to ' + otherId);
+          peers[id].emit('initReceive', otherId, userInfo);
+        }
+      } else {
+        peers[otherId].emit('rejectJoin');
       }
     });
 
@@ -39,9 +57,9 @@ module.exports = (io) => {
      * Send message to client to initiate a connection
      * The sender has already setup a peer connection receiver
      */
-    socket.on('initSend', (init_socket_id, username) => {
+    socket.on('initSend', (init_socket_id, userInfo) => {
       console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id);
-      peers[init_socket_id].emit('initSend', socket.id, username);
+      peers[init_socket_id].emit('initSend', socket.id, userInfo);
     });
 
     /**
@@ -64,7 +82,22 @@ module.exports = (io) => {
 
       socket.broadcast.emit('removePeer', socket.id);
       delete peers[socket.id];
-      delete peers[socket.id];
+
+      const targetRoom = rooms[socket.id];
+      if (creators[targetRoom]) {
+        console.log(creators[targetRoom].userInfo.name, '의 연결이 끊겼습니다');
+        let target;
+        creators[targetRoom].socket_id.forEach((element, i) => {
+          if (element == socket.id) {
+            target = i;
+          }
+        });
+        creators[targetRoom].socket_id.splice(target, 1);
+      }
+
+      if (rooms[socket.id]) {
+        delete rooms[socket.id];
+      }
     });
   });
 };

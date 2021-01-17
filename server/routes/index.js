@@ -22,7 +22,7 @@ router.get('/', function (req, res) {
 
   if (type == 'join' && roomId) {
     if (checkSignin(req)) {
-      res.render('rtc', { user: req.user.displayName });
+      res.render('rtc', { username: req.user.displayName, userid: req.user.id, profile: req.user.photos[0].value });
     } else {
       res.redirect('/');
     }

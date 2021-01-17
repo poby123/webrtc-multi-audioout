@@ -7,7 +7,10 @@ let peers = {};
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const roomId = urlParams.get('id');
-const myName = document.querySelector('#info-user').value;
+const myName = document.querySelector('#info-user-name').value;
+const myId = document.querySelector('#info-user-id').value;
+const myProfile = document.querySelector('#info-user-profile').value;
+const myInfo = { name: myName, id: myId, profile: myProfile };
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
@@ -62,20 +65,32 @@ function init(stream) {
   // myName = prompt('이름을 입력해주세요 : ');
   // console.log('new-user : ', myName);
   let localUserTag = document.getElementById('local-user-name');
-  localUserTag.innerText = myName;
+  localUserTag.innerText = myInfo.name;
   document.title = `Translate | ${roomId}`;
-  socket.emit('new-user', myName, roomId);
 
-  socket.on('initReceive', (socket_id, otherName) => {
-    console.log('INIT RECEIVE ' + socket_id + ' ' + otherName);
-    addPeer(socket_id, false, otherName);
+  socket.emit('init', myInfo, roomId);
 
-    socket.emit('initSend', socket_id, myName);
+  socket.on('requestJoin', (userInfo, otherId) => {
+    window.focus();
+    const result = window.confirm(`${userInfo.name}님의 입장을 수락하시겠습니까?`);
+    socket.emit('requestJoin', userInfo, result, otherId, roomId);
   });
 
-  socket.on('initSend', (socket_id, otherName) => {
+  socket.on('rejectJoin', () => {
+    alert('방장이 입장을 거부했습니다.');
+    window.replace('/');
+  });
+
+  socket.on('initReceive', (socket_id, otherInfo) => {
+    console.log('INIT RECEIVE ' + socket_id + ' ' + otherInfo.name);
+    addPeer(socket_id, false, otherInfo);
+
+    socket.emit('initSend', socket_id, myInfo);
+  });
+
+  socket.on('initSend', (socket_id, otherInfo) => {
     console.log('INIT SEND ' + socket_id);
-    addPeer(socket_id, true, otherName);
+    addPeer(socket_id, true, otherInfo);
   });
 
   socket.on('removePeer', (socket_id) => {
@@ -137,7 +152,9 @@ let streams = {};
  * @param {String} socket_id
  * @param {Boolean} am_initiator
  */
-function addPeer(socket_id, am_initiator, name) {
+function addPeer(socket_id, am_initiator, userinfo) {
+  console.log(userinfo);
+
   peers[socket_id] = new SimplePeer({
     initiator: am_initiator,
     stream: localStream,
@@ -155,7 +172,7 @@ function addPeer(socket_id, am_initiator, name) {
     /* create name tag */
     let nameTag = document.createElement('span');
     nameTag.className = 'user-name';
-    nameTag.innerText = name;
+    nameTag.innerText = userinfo.name;
 
     /* create video */
     let newVid = document.createElement('video');
