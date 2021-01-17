@@ -3,15 +3,33 @@ let socket;
 let localStream = null;
 let peers = {};
 
+/* document status */
+let current_deviceInfos;
+let currentMaximize;
+let showConfigModal = false;
+let streams = {};
+let users = {};
+
 /* parse data from url */
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const roomId = urlParams.get('id');
-let myName = document.querySelector('#info-user-name').value;
-let myId = document.querySelector('#info-user-id').value;
-let myProfile = document.querySelector('#info-user-profile').value;
-let myInfo;
 
+/* get document contexts */
+const peerListSection = document.querySelector('.section-peer-list');
+const peerListContainer = peerListSection.querySelector('.container');
+
+const mainVideoSection = document.querySelector('.section-main-video');
+const mainVideoContainer = mainVideoSection.querySelector('.container');
+
+const configModal = document.querySelector('.local-config-modal');
+const localUserTag = document.getElementById('local-user-name');
+
+const nameBox = document.querySelector('#info-user-name');
+const idBox = document.querySelector('#info-user-id');
+const profileBox = document.querySelector('#info-user-profile');
+
+/* parse userinfo */
 function makeid(length) {
   var result = '';
   var characters = '0123456789';
@@ -22,6 +40,11 @@ function makeid(length) {
   return result;
 }
 
+let myName = nameBox.value;
+let myId = idBox.value;
+let myProfile = profileBox.value;
+let myInfo;
+
 if (!myName) {
   let name = prompt('참여할 이름을 정해주세요 : ');
   myName = name;
@@ -29,16 +52,14 @@ if (!myName) {
   myId = makeid(30);
 }
 myInfo = { name: myName, id: myId, profile: myProfile };
+users['myInfo'] = myInfo;
+updatePeerList();
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
 const audioInputSelect = document.querySelector('select#audioSource');
 const videoSelect = document.querySelector('select#videoSource');
 const selectors = [audioInputSelect, videoSelect];
-
-let current_deviceInfos;
-let currentMaximize;
-let showConfigModal = false;
 
 // redirect if not https
 if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
@@ -80,41 +101,46 @@ const constraints = {
 function init(stream) {
   socket = io();
 
-  let localUserTag = document.getElementById('local-user-name');
+  /* set my name & title name as roomId*/
   localUserTag.innerText = myInfo.name;
   document.title = `Translate | ${roomId}`;
 
+  /* initialize */
   socket.emit('init', myInfo, roomId);
 
+  /* handle join request */
   socket.on('requestJoin', (userInfo, otherId) => {
     window.focus();
     const result = window.confirm(`${userInfo.name}님의 입장을 수락하시겠습니까?`);
     socket.emit('requestJoin', userInfo, result, otherId, roomId);
   });
 
+  /* handle room host reject joining */
   socket.on('rejectJoin', () => {
     alert('방장이 입장을 거부했습니다.');
     window.replace('/');
   });
 
+  /* handle initReceive from new client */
   socket.on('initReceive', (socket_id, otherInfo) => {
     console.log('INIT RECEIVE ' + socket_id + ' ' + otherInfo.name);
     addPeer(socket_id, false, otherInfo);
-
     socket.emit('initSend', socket_id, myInfo);
   });
 
+  /* handle initSend from existed client */
   socket.on('initSend', (socket_id, otherInfo) => {
     console.log('INIT SEND ' + socket_id);
     addPeer(socket_id, true, otherInfo);
   });
 
+  /* handle remove peer */
   socket.on('removePeer', (socket_id) => {
     console.log('removing peer ' + socket_id);
-
     removePeer(socket_id);
   });
 
+  /* handle event this client is disconnected. */
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
     for (let socket_id in peers) {
@@ -122,6 +148,7 @@ function init(stream) {
     }
   });
 
+  /* signaling */
   socket.on('signal', (data) => {
     peers[data.socket_id].signal(data.signal);
   });
@@ -135,6 +162,7 @@ function init(stream) {
  * @param {String} socket_id
  */
 function removePeer(socket_id) {
+  //handle if target video is current maximized video.
   if (streams[socket_id]) {
     if (socket_id == currentMaximize) {
       handleMinimize();
@@ -159,9 +187,9 @@ function removePeer(socket_id) {
   }
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
+  delete users[socket_id];
+  updatePeerList();
 }
-
-let streams = {};
 
 /**
  * Creates a new peer connection and sets the event listeners
@@ -169,13 +197,14 @@ let streams = {};
  * @param {Boolean} am_initiator
  */
 function addPeer(socket_id, am_initiator, userinfo) {
-  console.log(userinfo);
-
   peers[socket_id] = new SimplePeer({
     initiator: am_initiator,
     stream: localStream,
     config: configuration,
   });
+
+  users[socket_id] = userinfo;
+  updatePeerList();
 
   peers[socket_id].on('signal', (data) => {
     socket.emit('signal', {
@@ -230,6 +259,7 @@ function addPeer(socket_id, am_initiator, userinfo) {
         videoSelector.appendChild(option);
       }
     });
+
     /* add mute option to selector */
     const mute_option = document.createElement('option');
     mute_option.value = 'mute';
@@ -243,6 +273,7 @@ function addPeer(socket_id, am_initiator, userinfo) {
   });
 }
 
+/* handle maximize event */
 function handleMaximize(e) {
   let socket_id = e.currentTarget.id.replace('maximizeButton_', '');
   currentMaximize = socket_id;
@@ -255,7 +286,6 @@ function handleMaximize(e) {
   minimizeButton.innerHTML = 'Minimize';
   minimizeButton.addEventListener('click', handleMinimize);
 
-  let mainVideoContainer = document.querySelector('.main-video-container');
   mainVideoContainer.innerHTML = '';
   mainVideoContainer.appendChild(video);
   mainVideoContainer.appendChild(selector);
@@ -266,13 +296,14 @@ function handleMaximize(e) {
   document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
 
+/* handle minimize event */
 function handleMinimize() {
   currentMaximize = null;
-  let mainVideoContainer = document.querySelector('.main-video-container');
   mainVideoContainer.innerHTML = '';
   mainVideoContainer.setAttribute('style', 'display: none');
 }
 
+/* handle sound device change */
 function handleSoundChange(e) {
   console.log('handle sound change');
   let selector = document.getElementById(e.target.id);
@@ -368,6 +399,29 @@ function toggleVid() {
 }
 
 /**
+ * Handle Change of peers status
+ */
+function updatePeerList() {
+  peerListContainer.innerHTML = '';
+  for (const [key, value] of Object.entries(users)) {
+    let container = document.createElement('div');
+    container.className = 'a-user-container';
+
+    let profileImg = document.createElement('img');
+    profileImg.src = value.profile;
+    profileImg.className = 'profile-img';
+
+    let nameTag = document.createElement('span');
+    nameTag.innerHTML = value.name;
+    nameTag.className = 'profile-name';
+
+    container.appendChild(profileImg);
+    container.appendChild(nameTag);
+    peerListContainer.appendChild(container);
+  }
+}
+
+/**
  * Handle exit button event
  */
 function exit() {
@@ -381,8 +435,6 @@ function exit() {
  * Handle toggle config modal window
  */
 function toggleConfig() {
-  let configModal = document.querySelector('.local-config-modal');
-
   showConfigModal = !showConfigModal;
   if (showConfigModal) {
     configModal.setAttribute('style', 'display:flex');
