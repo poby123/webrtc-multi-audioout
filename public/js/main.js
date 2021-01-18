@@ -7,9 +7,11 @@ let peers = {};
 let current_deviceInfos;
 let currentMaximize;
 let showConfigModal = false;
+let showUserList = false;
 let streams = {};
 let waitUsers = {}; // {socket_id : userInfo}
 let users = {}; // {socket_id : userInfo}
+let meterRefreshs = {};
 
 /* parse data from url */
 const queryString = window.location.search;
@@ -115,6 +117,7 @@ function init(stream) {
     window.focus();
     waitUsers[otherId] = userInfo;
     updateWaitList();
+    toggleUserList();
   });
 
   /* handle room host reject joining */
@@ -176,6 +179,7 @@ function removePeer(socket_id) {
   let videoEl = document.getElementById(socket_id);
   let videoSelector = document.getElementById(`selector_${socket_id}`);
   let videoContainer = document.getElementById(`container_${socket_id}`);
+  let meter = document.getElementById(`meter_${socket_id}`);
   if (videoEl) {
     const tracks = videoEl.srcObject.getTracks();
 
@@ -184,13 +188,17 @@ function removePeer(socket_id) {
     });
 
     videoEl.srcObject = null;
-    videoEl.parentNode.removeChild(videoEl);
+    videoContainer.removeChild(videoEl);
     videoContainer.removeChild(videoSelector);
+    videoContainer.removeChild(meter);
     videoContainer.parentNode.removeChild(videoContainer);
   }
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
   delete users[socket_id];
+  if (meterRefreshs[socket_id]) {
+    delete meterRefreshs[socket_id];
+  }
   updatePeerList();
 }
 
@@ -246,10 +254,32 @@ function addPeer(socket_id, am_initiator, userinfo) {
     maximizeButton.id = `maximizeButton_${socket_id}`;
     maximizeButton.addEventListener('click', handleMaximize);
 
+    /* create meter */
+    let meter = document.createElement('meter');
+    meter.id = `meter_${socket_id}`;
+    meter.max = 1;
+    meter.high = 0.25;
+    meter.value = 0;
+    try {
+      const soundMeter = new SoundMeter(new AudioContext());
+      soundMeter.connectToSource(stream, (e) => {
+        if (e) {
+          alert(e);
+          return;
+        }
+        meterRefreshs[socket_id] = setInterval(() => {
+          meter.value = soundMeter.instant.toFixed(2);
+        }, 200);
+      });
+    } catch (e) {
+      console.log('Web Audio API not supported');
+    }
+
     /* append children */
     let videoSection = document.querySelector('.section-videos');
     videoSection.appendChild(videoContainer);
     videoContainer.appendChild(nameTag);
+    videoContainer.appendChild(meter);
     videoContainer.appendChild(newVid);
     videoContainer.appendChild(videoSelector);
     videoContainer.appendChild(maximizeButton);
@@ -402,6 +432,18 @@ function toggleVid() {
 }
 
 /**
+ * Toggle userList
+ */
+function toggleUserList() {
+  showUserList = !showUserList;
+  if (showUserList) {
+    peerListSection.setAttribute('style', 'display:flex');
+  } else {
+    peerListSection.setAttribute('style', 'display:none');
+  }
+}
+
+/**
  * Handle Change of peers status
  */
 function updatePeerList() {
@@ -461,15 +503,15 @@ function updateWaitList() {
   }
 }
 
-function handleApprove(e){
+function handleApprove(e) {
   const socket_id = e.currentTarget.id;
-  const targetInfo = waitUsers[socket_id]; 
+  const targetInfo = waitUsers[socket_id];
   socket.emit('requestJoin', targetInfo, true, socket_id, roomId);
   delete waitUsers[socket_id];
   updateWaitList();
 }
 
-function handleReject(e){
+function handleReject(e) {
   const socket_id = e.currentTarget.id;
   const targetInfo = waitUsers[socket_id];
   socket.emit('requestJoin', targetInfo, false, socket_id, roomId);

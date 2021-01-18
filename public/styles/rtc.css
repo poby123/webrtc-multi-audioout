@@ -2,6 +2,10 @@ body {
   margin: 0;
   background-color: black;
 }
+meter {
+  /* transform: rotate(270deg); */
+  width: 100%;
+}
 
 /* section-peer-list */
 .section-peer-list {
@@ -12,7 +16,7 @@ body {
   height: 90vh;
   background-color: white;
 
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
