@@ -8,7 +8,8 @@ let current_deviceInfos;
 let currentMaximize;
 let showConfigModal = false;
 let streams = {};
-let users = {};
+let waitUsers = {}; // {socket_id : userInfo}
+let users = {}; // {socket_id : userInfo}
 
 /* parse data from url */
 const queryString = window.location.search;
@@ -17,7 +18,8 @@ const roomId = urlParams.get('id');
 
 /* get document contexts */
 const peerListSection = document.querySelector('.section-peer-list');
-const peerListContainer = peerListSection.querySelector('.container');
+const waitUserContainer = peerListSection.querySelector('.wait-container');
+const peerListContainer = peerListSection.querySelector('.peer-container');
 
 const mainVideoSection = document.querySelector('.section-main-video');
 const mainVideoContainer = mainVideoSection.querySelector('.container');
@@ -111,14 +113,15 @@ function init(stream) {
   /* handle join request */
   socket.on('requestJoin', (userInfo, otherId) => {
     window.focus();
-    const result = window.confirm(`${userInfo.name}님의 입장을 수락하시겠습니까?`);
-    socket.emit('requestJoin', userInfo, result, otherId, roomId);
+    waitUsers[otherId] = userInfo;
+    updateWaitList();
   });
 
   /* handle room host reject joining */
   socket.on('rejectJoin', () => {
+    window.focus();
     alert('방장이 입장을 거부했습니다.');
-    window.replace('/');
+    exit();
   });
 
   /* handle initReceive from new client */
@@ -422,9 +425,63 @@ function updatePeerList() {
 }
 
 /**
+ * Handle change of wait users
+ */
+function updateWaitList() {
+  waitUserContainer.innerHTML = '';
+  for (const [key, value] of Object.entries(waitUsers)) {
+    let container = document.createElement('div');
+    container.className = 'a-user-container';
+
+    let profileImg = document.createElement('img');
+    profileImg.src = value.profile;
+    profileImg.className = 'profile-img';
+
+    let nameTag = document.createElement('span');
+    nameTag.innerHTML = value.name;
+    nameTag.className = 'profile-name';
+
+    let approveButton = document.createElement('button');
+    approveButton.innerHTML = '수락';
+    approveButton.className = 'approve-button';
+    approveButton.id = key;
+    approveButton.addEventListener('click', handleApprove);
+
+    let rejectButton = document.createElement('button');
+    rejectButton.innerHTML = '거절';
+    rejectButton.className = 'reject-button';
+    rejectButton.id = key;
+    rejectButton.addEventListener('click', handleReject);
+
+    container.appendChild(approveButton);
+    container.appendChild(rejectButton);
+    container.appendChild(profileImg);
+    container.appendChild(nameTag);
+    waitUserContainer.appendChild(container);
+  }
+}
+
+function handleApprove(e){
+  const socket_id = e.currentTarget.id;
+  const targetInfo = waitUsers[socket_id]; 
+  socket.emit('requestJoin', targetInfo, true, socket_id, roomId);
+  delete waitUsers[socket_id];
+  updateWaitList();
+}
+
+function handleReject(e){
+  const socket_id = e.currentTarget.id;
+  const targetInfo = waitUsers[socket_id];
+  socket.emit('requestJoin', targetInfo, false, socket_id, roomId);
+  delete waitUsers[socket_id];
+  updateWaitList();
+}
+
+/**
  * Handle exit button event
  */
 function exit() {
+  window.focus();
   const result = confirm('회의를 나가시겠습니까?');
   if (result) {
     location.replace('/');

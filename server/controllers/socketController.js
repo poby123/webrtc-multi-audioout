@@ -50,6 +50,7 @@ module.exports = (io) => {
           peers[id].emit('initReceive', otherId, userInfo);
         }
       } else {
+        console.log(userInfo.name + 'is rejected');
         peers[otherId].emit('rejectJoin');
       }
     });
@@ -84,9 +85,9 @@ module.exports = (io) => {
       socket.broadcast.emit('removePeer', socket.id);
       delete peers[socket.id];
 
-      const targetRoom = rooms[socket.id];
-      if (creators[targetRoom]) {
-        console.log(creators[targetRoom].userInfo.name, '의 연결이 끊겼습니다');
+      const targetRoom = rooms[socket.id];      
+      if (creators[targetRoom] && creators[targetRoom].socket_id.includes(socket.id)) {
+        console.log('방장 연결 끊김.');
         let target;
         creators[targetRoom].socket_id.forEach((element, i) => {
           if (element == socket.id) {
