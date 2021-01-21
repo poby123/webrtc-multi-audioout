@@ -57,7 +57,7 @@ if (!myName) {
 }
 myInfo = { name: myName, id: myId, profile: myProfile };
 users['myInfo'] = myInfo;
-updatePeerList();
+addPeerList('myInfo');
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
@@ -115,8 +115,11 @@ function init(stream) {
   /* handle join request */
   socket.on('requestJoin', (userInfo, otherId) => {
     window.focus();
+    console.log('request Join');
+    alert('새로운 유저가 입장을 요청했습니다.');
     waitUsers[otherId] = userInfo;
-    updateWaitList();
+    addWaitList(otherId);
+    showUserList = false;
     toggleUserList();
   });
 
@@ -199,7 +202,8 @@ function removePeer(socket_id) {
   if (meterRefreshs[socket_id]) {
     delete meterRefreshs[socket_id];
   }
-  updatePeerList();
+  // addPeerList();
+  deletePeerList(socket_id);
 }
 
 /**
@@ -215,7 +219,8 @@ function addPeer(socket_id, am_initiator, userinfo) {
   });
 
   users[socket_id] = userinfo;
-  updatePeerList();
+  deleteWaitList(socket_id);
+  addPeerList(socket_id);
 
   peers[socket_id].on('signal', (data) => {
     socket.emit('signal', {
@@ -446,60 +451,84 @@ function toggleUserList() {
 /**
  * Handle Change of peers status
  */
-function updatePeerList() {
-  peerListContainer.innerHTML = '';
-  for (const [key, value] of Object.entries(users)) {
-    let container = document.createElement('div');
-    container.className = 'a-user-container';
+function addPeerList(key) {
+  const value = users[key];
 
-    let profileImg = document.createElement('img');
-    profileImg.src = value.profile;
-    profileImg.className = 'profile-img';
+  let container = document.createElement('div');
+  container.className = 'a-user-container';
+  container.id = `peerList_${key}`;
 
-    let nameTag = document.createElement('span');
-    nameTag.innerHTML = value.name;
-    nameTag.className = 'profile-name';
+  let profileImg = document.createElement('img');
+  profileImg.src = value.profile;
+  profileImg.className = 'profile-img';
 
-    container.appendChild(profileImg);
-    container.appendChild(nameTag);
-    peerListContainer.appendChild(container);
+  let nameTag = document.createElement('span');
+  nameTag.innerHTML = value.name;
+  nameTag.className = 'profile-name';
+
+  container.appendChild(profileImg);
+  container.appendChild(nameTag);
+  peerListContainer.appendChild(container);
+}
+
+function deletePeerList(socket_id) {
+  const targetContainer = document.querySelector(`#peerList_${socket_id}`);
+  const targetChildren = (targetContainer && targetContainer.children) || null;
+
+  if (targetChildren) {
+    for (let i = 0; i < targetChildren.length; i++) {
+      targetContainer.removeChild(targetChildren[i]);
+    }
+    targetContainer.parentNode.removeChild(targetContainer);
   }
 }
 
 /**
  * Handle change of wait users
  */
-function updateWaitList() {
-  waitUserContainer.innerHTML = '';
-  for (const [key, value] of Object.entries(waitUsers)) {
-    let container = document.createElement('div');
-    container.className = 'a-user-container';
+function addWaitList(key) {
+  const value = waitUsers[key];
 
-    let profileImg = document.createElement('img');
-    profileImg.src = value.profile;
-    profileImg.className = 'profile-img';
+  let container = document.createElement('div');
+  container.className = 'a-user-container';
+  container.id = `waitList_${key}`;
 
-    let nameTag = document.createElement('span');
-    nameTag.innerHTML = value.name;
-    nameTag.className = 'profile-name';
+  let profileImg = document.createElement('img');
+  profileImg.src = value.profile;
+  profileImg.className = 'profile-img';
 
-    let approveButton = document.createElement('button');
-    approveButton.innerHTML = '수락';
-    approveButton.className = 'approve-button';
-    approveButton.id = key;
-    approveButton.addEventListener('click', handleApprove);
+  let nameTag = document.createElement('span');
+  nameTag.innerHTML = value.name;
+  nameTag.className = 'profile-name';
 
-    let rejectButton = document.createElement('button');
-    rejectButton.innerHTML = '거절';
-    rejectButton.className = 'reject-button';
-    rejectButton.id = key;
-    rejectButton.addEventListener('click', handleReject);
+  let approveButton = document.createElement('button');
+  approveButton.innerHTML = '수락';
+  approveButton.className = 'approve-button';
+  approveButton.id = key;
+  approveButton.addEventListener('click', handleApprove);
 
-    container.appendChild(approveButton);
-    container.appendChild(rejectButton);
-    container.appendChild(profileImg);
-    container.appendChild(nameTag);
-    waitUserContainer.appendChild(container);
+  let rejectButton = document.createElement('button');
+  rejectButton.innerHTML = '거절';
+  rejectButton.className = 'reject-button';
+  rejectButton.id = key;
+  rejectButton.addEventListener('click', handleReject);
+
+  container.appendChild(approveButton);
+  container.appendChild(rejectButton);
+  container.appendChild(profileImg);
+  container.appendChild(nameTag);
+  waitUserContainer.appendChild(container);
+}
+
+function deleteWaitList(socket_id) {
+  const targetContainer = document.querySelector(`#waitList_${socket_id}`);
+  const targetChildren = (targetContainer && targetContainer.children) || null;
+
+  if (targetChildren) {
+    for (let i = 0; i < targetChildren.length; i++) {
+      targetContainer.removeChild(targetChildren[i]);
+    }
+    targetContainer.parentNode.removeChild(targetContainer);
   }
 }
 
@@ -508,7 +537,6 @@ function handleApprove(e) {
   const targetInfo = waitUsers[socket_id];
   socket.emit('requestJoin', targetInfo, true, socket_id, roomId);
   delete waitUsers[socket_id];
-  updateWaitList();
 }
 
 function handleReject(e) {
@@ -516,7 +544,7 @@ function handleReject(e) {
   const targetInfo = waitUsers[socket_id];
   socket.emit('requestJoin', targetInfo, false, socket_id, roomId);
   delete waitUsers[socket_id];
-  updateWaitList();
+  deleteWaitList(socket_id);
 }
 
 /**

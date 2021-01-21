@@ -29,15 +29,24 @@ module.exports = (io) => {
         }
       } else {
         console.log('request to 방장');
-        if (creators[roomId] && creators[roomId].socket_id && peers[creators[roomId].socket_id]) {
+        if (creators[roomId] && creators[roomId].socket_id) {
           const creator_sockets = creators[roomId].socket_id;
           const len = creator_sockets.length;
-          peers[creator_sockets[len - 1]].emit('requestJoin', userInfo, socket.id);
+          console.log('request to 방장 : ', creator_sockets[len - 1]);
+
+          creator_sockets.forEach((element) => {
+            console.log(element);
+            peers[element].emit('requestJoin', userInfo, socket.id);
+          });
+          // peers[creator_sockets[len - 1]].emit('requestJoin', userInfo, socket.id);
         }
       }
     });
 
     socket.on('requestJoin', (userInfo, result, otherId, roomId) => {
+      if (!otherId) {
+        return;
+      }
       if (result) {
         rooms[otherId] = roomId;
         peers[otherId].join(roomId);
@@ -85,7 +94,7 @@ module.exports = (io) => {
       socket.broadcast.emit('removePeer', socket.id);
       delete peers[socket.id];
 
-      const targetRoom = rooms[socket.id];      
+      const targetRoom = rooms[socket.id];
       if (creators[targetRoom] && creators[targetRoom].socket_id.includes(socket.id)) {
         console.log('방장 연결 끊김.');
         let target;
