@@ -1,6 +1,6 @@
 var createError = require('http-errors');
 const fs = require('fs');
-const https = require('https');
+const http = require('http');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -12,14 +12,14 @@ var session_config = require('./server/config/session');
 let socketController = require('./server/controllers/socketController');
 
 // https server options
-const options = {
-  key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem'), 'utf-8'),
-  cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'), 'utf-8'),
-}; 
+// const options = {
+//   key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem'), 'utf-8'),
+//   cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'), 'utf-8'),
+// }; 
 
 // app, server
 let app = express();
-let server = https.createServer(options, app);
+let server = http.createServer(app);
 let io = require('socket.io')(server);
 
 socketController(io);
