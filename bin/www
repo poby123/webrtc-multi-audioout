@@ -13,7 +13,7 @@ http.createServer((req, res) => {
   console.log('http connect');
   res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
   res.end();
-}).listen(80);
+}).listen(3000);
 
 const port = normalizePort(process.env.TRANSLATION_WEBRTC_PORT || '443');
 server.listen(port);
