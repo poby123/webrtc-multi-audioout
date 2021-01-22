@@ -8,18 +8,21 @@ module.exports = (io) => {
 
     socket.on('init', (userInfo, roomId) => {
       peers[socket.id] = socket;
+      socket.join(roomId);
 
-      console.log(creators[roomId]);
+      // console.log(creators[roomId]);
+      // console.log('rooms : ', io.sockets.adapter.rooms);
+      // console.log(`room ${roomId} : `, io.sockets.adapter.rooms.get(roomId));
+      // console.log(`room ${roomId} size : `, io.sockets.adapter.rooms.get(roomId).size);
+
       if (!creators[roomId]) {
         console.log('create 방장');
         creators[roomId] = { socket_id: [socket.id], userInfo: userInfo };
         rooms[socket.id] = roomId;
-        socket.join(roomId);
       } else if (creators[roomId] && creators[roomId].userInfo.id == userInfo.id) {
         console.log('add 방장');
         creators[roomId].socket_id.push(socket.id);
         rooms[socket.id] = roomId;
-        socket.join(roomId);
 
         for (let id in peers) {
           if (id === socket.id) continue;
@@ -50,7 +53,6 @@ module.exports = (io) => {
       if (result) {
         rooms[otherId] = roomId;
         peers[otherId].join(roomId);
-        // peers[otherId].emit('responseJoin');
 
         for (let id in peers) {
           if (id === otherId) continue;
@@ -59,8 +61,8 @@ module.exports = (io) => {
           peers[id].emit('initReceive', otherId, userInfo);
         }
       } else {
-        console.log(userInfo.name + 'is rejected');
-        peers[otherId].emit('rejectJoin');
+        userInfo && console.log(userInfo.name + 'is rejected');
+        peers[otherId] && peers[otherId].emit('rejectJoin');
       }
     });
 
@@ -104,6 +106,10 @@ module.exports = (io) => {
           }
         });
         creators[targetRoom].socket_id.splice(target, 1);
+      }
+
+      if(!io.sockets.adapter.rooms.get(rooms[socket.id])){
+        delete creators[rooms[socket.id]];
       }
 
       if (rooms[socket.id]) {

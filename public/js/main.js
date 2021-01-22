@@ -184,17 +184,19 @@ function removePeer(socket_id) {
   let videoContainer = document.getElementById(`container_${socket_id}`);
   let meter = document.getElementById(`meter_${socket_id}`);
   if (videoEl) {
-    const tracks = videoEl.srcObject.getTracks();
+    if (videoEl.srcObject) {
+      const tracks = videoEl.srcObject.getTracks();
 
-    tracks.forEach(function (track) {
-      track.stop();
-    });
+      tracks.forEach(function (track) {
+        track.stop();
+      });
 
-    videoEl.srcObject = null;
-    videoContainer.removeChild(videoEl);
-    videoContainer.removeChild(videoSelector);
-    videoContainer.removeChild(meter);
-    videoContainer.parentNode.removeChild(videoContainer);
+      videoEl.srcObject = null;
+      videoContainer.removeChild(videoEl);
+      videoContainer.removeChild(videoSelector);
+      videoContainer.removeChild(meter);
+      videoContainer.parentNode.removeChild(videoContainer);
+    }
   }
   if (peers[socket_id]) peers[socket_id].destroy();
   delete peers[socket_id];
@@ -204,6 +206,7 @@ function removePeer(socket_id) {
   }
   // addPeerList();
   deletePeerList(socket_id);
+  deleteWaitList(socket_id);
 }
 
 /**
