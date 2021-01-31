@@ -152,9 +152,6 @@ function init(stream) {
   /* handle event this client is disconnected. */
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
-    for (let socket_id in peers) {
-      removePeer(socket_id);
-    }
   });
 
   /* signaling */

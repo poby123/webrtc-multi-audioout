@@ -5,15 +5,10 @@ creators = {}; // creator[roomId] = { socket_id : [socket.id], userInfo : userIn
 module.exports = (io) => {
   io.on('connect', (socket) => {
     console.log('a client is connected : ', socket.id);
+    peers[socket.id] = socket;
 
     socket.on('init', (userInfo, roomId) => {
-      peers[socket.id] = socket;
       socket.join(roomId);
-
-      // console.log(creators[roomId]);
-      // console.log('rooms : ', io.sockets.adapter.rooms);
-      // console.log(`room ${roomId} : `, io.sockets.adapter.rooms.get(roomId));
-      // console.log(`room ${roomId} size : `, io.sockets.adapter.rooms.get(roomId).size);
 
       if (!creators[roomId]) {
         console.log('create 방장');
@@ -41,7 +36,6 @@ module.exports = (io) => {
             console.log(element);
             peers[element].emit('requestJoin', userInfo, socket.id);
           });
-          // peers[creator_sockets[len - 1]].emit('requestJoin', userInfo, socket.id);
         }
       }
     });
@@ -52,7 +46,6 @@ module.exports = (io) => {
       }
       if (result) {
         rooms[otherId] = roomId;
-        peers[otherId].join(roomId);
 
         for (let id in peers) {
           if (id === otherId) continue;
@@ -66,18 +59,11 @@ module.exports = (io) => {
       }
     });
 
-    /**
-     * Send message to client to initiate a connection
-     * The sender has already setup a peer connection receiver
-     */
     socket.on('initSend', (init_socket_id, userInfo) => {
       console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id);
       peers[init_socket_id].emit('initSend', socket.id, userInfo);
     });
 
-    /**
-     * relay a peerconnection signal to a specific socket
-     */
     socket.on('signal', (data) => {
       // console.log('sending signal from ' + socket.id + ' to ', data)
       if (!peers[data.socket_id]) return;
@@ -87,13 +73,10 @@ module.exports = (io) => {
       });
     });
 
-    /**
-     * remove the disconnected peer connection from all other connected clients
-     */
     socket.on('disconnect', () => {
       console.log('socket disconnected ' + socket.id);
 
-      socket.broadcast.emit('removePeer', socket.id);
+      socket.broadcast.to(rooms[socket.id]).emit('removePeer', socket.id);
       delete peers[socket.id];
 
       const targetRoom = rooms[socket.id];
@@ -108,7 +91,7 @@ module.exports = (io) => {
         creators[targetRoom].socket_id.splice(target, 1);
       }
 
-      if(!io.sockets.adapter.rooms.get(rooms[socket.id])){
+      if (!io.sockets.adapter.rooms.get(rooms[socket.id])) {
         delete creators[rooms[socket.id]];
       }
 
