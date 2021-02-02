@@ -1,102 +1,129 @@
-peers = {}; //peers[socket.id] = socket
-rooms = {}; //rooms[socket.id] = roomId
-creators = {}; // creator[roomId] = { socket_id : [socket.id], userInfo : userInfo}
+peers = {}; //peers[session id] = socket
+rooms = {}; //rooms[session id] = roomId
+creators = {}; //creators[roomId] = {sessionId: [host session id], userId:''};
 
 module.exports = (io) => {
   io.on('connect', (socket) => {
     console.log('a client is connected : ', socket.id);
-    peers[socket.id] = socket;
 
     socket.on('init', (userInfo, roomId) => {
+      peers[userInfo.sessionId] = socket;
       socket.join(roomId);
+      socket.sessionId = userInfo.sessionId;
+      console.log('join sessionId : ', socket.sessionId);
 
-      if (!creators[roomId]) {
-        console.log('create 방장');
-        creators[roomId] = { socket_id: [socket.id], userInfo: userInfo };
-        rooms[socket.id] = roomId;
-      } else if (creators[roomId] && creators[roomId].userInfo.id == userInfo.id) {
-        console.log('add 방장');
-        creators[roomId].socket_id.push(socket.id);
-        rooms[socket.id] = roomId;
+      // Hosts
+      if (!creators[roomId] || creators[roomId].userId == userInfo.userId) {
+        rooms[userInfo.sessionId] = roomId;
+        const sessionId = userInfo.sessionId;
+        const userId = userInfo.userId;
 
-        for (let id in peers) {
-          if (id === socket.id) continue;
-          if (rooms[id] != rooms[socket.id]) continue;
-          console.log('sending init receive to ' + socket.id);
-          peers[id].emit('initReceive', socket.id, userInfo);
+        if (!creators[roomId]) {
+          console.log('create room');
+          creators[roomId] = { sessionId: [sessionId], userId: userId };
+        } else if (creators[roomId].userId == userId) {
+          console.log('add 방장');
+          creators[roomId].sessionId.push(sessionId);
+
+          for (let id in peers) {
+            if (id === sessionId) continue;
+            if (rooms[id] != rooms[sessionId]) continue;
+            console.log('sending init receive to ' + socket.id);
+            peers[id].emit('initReceive', userInfo);
+          }
         }
-      } else {
-        console.log('request to 방장');
-        if (creators[roomId] && creators[roomId].socket_id) {
-          const creator_sockets = creators[roomId].socket_id;
-          const len = creator_sockets.length;
-          console.log('request to 방장 : ', creator_sockets[len - 1]);
-
-          creator_sockets.forEach((element) => {
-            console.log(element);
-            peers[element].emit('requestJoin', userInfo, socket.id);
+        socket.emit('host');
+      }
+      // Participants
+      else {
+        if (creators[roomId]) {
+          const creatorIds = creators[roomId].sessionId;
+          creatorIds.forEach((id) => {
+            console.log(id);
+            peers[id].emit('requestJoin', userInfo);
           });
         }
       }
     });
 
-    socket.on('requestJoin', (userInfo, result, otherId, roomId) => {
-      if (!otherId) {
-        return;
-      }
+    socket.on('requestJoin', (userInfo, result, roomId) => {
+      const sessionId = userInfo.sessionId;
       if (result) {
-        rooms[otherId] = roomId;
+        rooms[sessionId] = roomId;
 
         for (let id in peers) {
-          if (id === otherId) continue;
-          if (rooms[id] != rooms[otherId]) continue;
-          console.log('sending init receive to ' + otherId);
-          peers[id].emit('initReceive', otherId, userInfo);
+          if (id === sessionId) continue;
+          if (rooms[id] != rooms[sessionId]) continue;
+          console.log('sending init receive to ' + sessionId);
+          peers[id].emit('initReceive', userInfo);
         }
       } else {
         userInfo && console.log(userInfo.name + 'is rejected');
-        peers[otherId] && peers[otherId].emit('rejectJoin');
+        peers[sessionId] && peers[sessionId].emit('rejectJoin');
       }
     });
 
-    socket.on('initSend', (init_socket_id, userInfo) => {
-      console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id);
-      peers[init_socket_id].emit('initSend', socket.id, userInfo);
+    socket.on('initSend', (id, userInfo) => {
+      console.log('INIT SEND by ' + socket.id + ' for ' + id);
+      peers[id] && peers[id].emit('initSend', userInfo);
     });
 
-    socket.on('signal', (data) => {
-      // console.log('sending signal from ' + socket.id + ' to ', data)
-      if (!peers[data.socket_id]) return;
-      peers[data.socket_id].emit('signal', {
-        socket_id: socket.id,
+    socket.on('signal', (data, sessionId) => {
+      if (!peers[data.sessionId]) return;
+      // console.log('signaling sessionId : ', sessionId);
+      peers[data.sessionId].emit('signal', {
+        sessionId: sessionId,
         signal: data.signal,
       });
     });
 
+    socket.on('restore', (userInfo, roomId) => {
+      if (!userInfo || !userInfo.joined) {
+        return;
+      }
+      console.log('restore...');
+      const sessionId = userInfo.sessionId;
+      socket.sessionId = sessionId;
+      socket.join(roomId);
+      peers[sessionId] = socket;
+      rooms[sessionId] = roomId;
+
+      if (userInfo.host) {
+        console.log('restore Host of room : ', roomId);
+        if (!creators[roomId]) {
+          creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
+        } else if (creators[roomId].userId == userInfo.userId) {
+          creators[roomId].sessionId.push(sessionId);
+        }
+      }
+    });
+
     socket.on('disconnect', () => {
-      console.log('socket disconnected ' + socket.id);
+      console.log('socket disconnected ' + socket.sessionId);
+      const sessionId = socket.sessionId;
+      const targetRoom = rooms[sessionId];
 
-      socket.broadcast.to(rooms[socket.id]).emit('removePeer', socket.id);
-      delete peers[socket.id];
+      socket.broadcast.to(targetRoom).emit('removePeer', sessionId);
+      delete peers[sessionId];
+      delete socket[sessionId];
 
-      const targetRoom = rooms[socket.id];
-      if (creators[targetRoom] && creators[targetRoom].socket_id.includes(socket.id)) {
+      if (creators[targetRoom] && creators[targetRoom].sessionId.includes(sessionId)) {
         console.log('방장 연결 끊김.');
         let target;
-        creators[targetRoom].socket_id.forEach((element, i) => {
-          if (element == socket.id) {
+        creators[targetRoom].sessionId.forEach((element, i) => {
+          if (element == sessionId) {
             target = i;
           }
         });
-        creators[targetRoom].socket_id.splice(target, 1);
+        creators[targetRoom].sessionId.splice(target, 1);
       }
 
-      if (!io.sockets.adapter.rooms.get(rooms[socket.id])) {
-        delete creators[rooms[socket.id]];
+      if (!io.sockets.adapter.rooms.get(rooms[sessionId])) {
+        delete creators[targetRoom];
       }
 
-      if (rooms[socket.id]) {
-        delete rooms[socket.id];
+      if (rooms[sessionId]) {
+        delete rooms[sessionId];
       }
     });
   });

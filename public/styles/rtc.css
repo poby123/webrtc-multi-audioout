@@ -6,8 +6,8 @@ meter {
   /* transform: rotate(270deg); */
   width: 100%;
 }
-button:hover{
-  cursor:pointer;
+button:hover {
+  cursor: pointer;
 }
 
 /* section-peer-list */
@@ -98,14 +98,16 @@ button:hover{
   justify-content: flex-start;
   align-items: center;
   /* border: 2px blue solid; */
+  /* overflow: wrap; */
   flex-wrap: wrap;
   margin-bottom: 10vh;
 }
 
 /* local video container*/
-.local-video-container, .video-container{
+.local-video-container,
+.video-container {
   flex: 1;
-  min-width: 30%;
+  min-width: 20%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;

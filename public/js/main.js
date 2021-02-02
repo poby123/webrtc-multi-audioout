@@ -9,8 +9,8 @@ let currentMaximize;
 let showConfigModal = false;
 let showUserList = false;
 let streams = {};
-let waitUsers = {}; // {socket_id : userInfo}
-let users = {}; // {socket_id : userInfo}
+let waitUsers = {};
+let users = {};
 let meterRefreshs = {};
 
 /* parse data from url */
@@ -55,7 +55,7 @@ if (!myName) {
   myProfile = '/images/google.png';
   myId = makeid(30);
 }
-myInfo = { name: myName, id: myId, profile: myProfile };
+myInfo = { name: myName, userId: myId, profile: myProfile, host: false, joined: false, sessionId: makeid(10) };
 users['myInfo'] = myInfo;
 addPeerList('myInfo');
 
@@ -112,11 +112,18 @@ function init(stream) {
   /* initialize */
   socket.emit('init', myInfo, roomId);
 
+  socket.on('host', () => {
+    myInfo.host = true;
+    myInfo.joined = true;
+    console.log('host : ', myInfo.host);
+  });
+
   /* handle join request */
-  socket.on('requestJoin', (userInfo, otherId) => {
+  socket.on('requestJoin', (userInfo) => {
     window.focus();
     console.log('request Join');
     alert('새로운 유저가 입장을 요청했습니다.');
+    const otherId = userInfo.sessionId;
     waitUsers[otherId] = userInfo;
     addWaitList(otherId);
     showUserList = false;
@@ -131,55 +138,58 @@ function init(stream) {
   });
 
   /* handle initReceive from new client */
-  socket.on('initReceive', (socket_id, otherInfo) => {
-    console.log('INIT RECEIVE ' + socket_id + ' ' + otherInfo.name);
-    addPeer(socket_id, false, otherInfo);
-    socket.emit('initSend', socket_id, myInfo);
+  socket.on('initReceive', (otherInfo) => {
+    console.log('INIT RECEIVE ' + otherInfo.name);
+    addPeer(false, otherInfo);
+    console.log(otherInfo);
+    socket.emit('initSend', otherInfo.sessionId, myInfo);
   });
 
   /* handle initSend from existed client */
-  socket.on('initSend', (socket_id, otherInfo) => {
-    console.log('INIT SEND ' + socket_id);
-    addPeer(socket_id, true, otherInfo);
+  socket.on('initSend', (otherInfo) => {
+    console.log('INIT SEND ' + otherInfo.name);
+    myInfo.joined = true;
+    addPeer(true, otherInfo);
   });
 
   /* handle remove peer */
-  socket.on('removePeer', (socket_id) => {
-    console.log('removing peer ' + socket_id);
-    removePeer(socket_id);
+  socket.on('removePeer', (id) => {
+    console.log('removing peer ' + id);
+    removePeer(id);
   });
 
   /* handle event this client is disconnected. */
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
+    socket.emit('restore', myInfo, roomId);
   });
 
   /* signaling */
   socket.on('signal', (data) => {
-    peers[data.socket_id].signal(data.signal);
+    peers[data.sessionId].signal(data.signal);
   });
 
   return stream;
 }
 
 /**
- * Remove a peer with given socket_id.
+ * Remove a peer with given session id.
  * Removes the video element and deletes the connection
- * @param {String} socket_id
+ * @param {String} sessionId
  */
-function removePeer(socket_id) {
+function removePeer(sessionId) {
   //handle if target video is current maximized video.
-  if (streams[socket_id]) {
-    if (socket_id == currentMaximize) {
+  if (streams[sessionId]) {
+    if (sessionId == currentMaximize) {
       handleMinimize();
     }
-    delete streams[socket_id];
+    delete streams[sessionId];
   }
 
-  let videoEl = document.getElementById(socket_id);
-  let videoSelector = document.getElementById(`selector_${socket_id}`);
-  let videoContainer = document.getElementById(`container_${socket_id}`);
-  let meter = document.getElementById(`meter_${socket_id}`);
+  let videoEl = document.getElementById(sessionId);
+  let videoSelector = document.getElementById(`selector_${sessionId}`);
+  let videoContainer = document.getElementById(`container_${sessionId}`);
+  let meter = document.getElementById(`meter_${sessionId}`);
   if (videoEl) {
     if (videoEl.srcObject) {
       const tracks = videoEl.srcObject.getTracks();
@@ -195,73 +205,75 @@ function removePeer(socket_id) {
       videoContainer.parentNode.removeChild(videoContainer);
     }
   }
-  if (peers[socket_id]) peers[socket_id].destroy();
-  delete peers[socket_id];
-  delete users[socket_id];
-  if (meterRefreshs[socket_id]) {
-    delete meterRefreshs[socket_id];
+  if (peers[sessionId]) peers[sessionId].destroy();
+  delete peers[sessionId];
+  delete users[sessionId];
+  if (meterRefreshs[sessionId]) {
+    delete meterRefreshs[sessionId];
   }
   // addPeerList();
-  deletePeerList(socket_id);
-  deleteWaitList(socket_id);
+  deletePeerList(sessionId);
+  deleteWaitList(sessionId);
 }
 
-/**
- * Creates a new peer connection and sets the event listeners
- * @param {String} socket_id
- * @param {Boolean} am_initiator
- */
-function addPeer(socket_id, am_initiator, userinfo) {
-  peers[socket_id] = new SimplePeer({
+function addPeer(am_initiator, userInfo) {
+  const id = userInfo.sessionId;
+
+  peers[id] = new SimplePeer({
     initiator: am_initiator,
     stream: localStream,
     config: configuration,
   });
 
-  users[socket_id] = userinfo;
-  deleteWaitList(socket_id);
-  addPeerList(socket_id);
+  users[id] = userInfo;
+  deleteWaitList(id);
+  addPeerList(id);
 
-  peers[socket_id].on('signal', (data) => {
-    socket.emit('signal', {
-      signal: data,
-      socket_id: socket_id,
-    });
+  peers[id].on('signal', (data) => {
+    console.log('signaling data : ', data);
+    socket.emit(
+      'signal',
+      {
+        signal: data,
+        sessionId: id,
+      },
+      myInfo.sessionId,
+    );
   });
 
-  peers[socket_id].on('stream', (stream) => {
+  peers[id].on('stream', (stream) => {
     /* create name tag */
     let nameTag = document.createElement('span');
     nameTag.className = 'user-name';
-    nameTag.innerText = userinfo.name;
+    nameTag.innerText = userInfo.name;
 
     /* create video */
     let newVid = document.createElement('video');
     newVid.srcObject = stream;
-    streams[socket_id] = stream;
+    streams[id] = stream;
     console.log('stream : ', stream);
-    newVid.id = socket_id;
+    newVid.id = id;
     newVid.playsinline = false;
     newVid.autoplay = true;
 
     /* create container */
     let videoContainer = document.createElement('div');
     videoContainer.className = 'video-container';
-    videoContainer.id = `container_${socket_id}`;
+    videoContainer.id = `container_${id}`;
 
     /* create selector */
     let videoSelector = document.createElement('select');
-    videoSelector.id = `selector_${socket_id}`;
+    videoSelector.id = `selector_${id}`;
 
     /* create maximize button */
     let maximizeButton = document.createElement('button');
     maximizeButton.innerHTML = 'Maximize';
-    maximizeButton.id = `maximizeButton_${socket_id}`;
+    maximizeButton.id = `maximizeButton_${id}`;
     maximizeButton.addEventListener('click', handleMaximize);
 
     /* create meter */
     let meter = document.createElement('meter');
-    meter.id = `meter_${socket_id}`;
+    meter.id = `meter_${id}`;
     meter.max = 1;
     meter.high = 0.25;
     meter.value = 0;
@@ -272,7 +284,7 @@ function addPeer(socket_id, am_initiator, userinfo) {
           alert(e);
           return;
         }
-        meterRefreshs[socket_id] = setInterval(() => {
+        meterRefreshs[id] = setInterval(() => {
           meter.value = soundMeter.instant.toFixed(2);
         }, 200);
       });
@@ -313,13 +325,13 @@ function addPeer(socket_id, am_initiator, userinfo) {
 
 /* handle maximize event */
 function handleMaximize(e) {
-  let socket_id = e.currentTarget.id.replace('maximizeButton_', '');
-  currentMaximize = socket_id;
-  let video = document.getElementById(socket_id).cloneNode(true);
-  let targetStream = streams[socket_id];
+  let id = e.currentTarget.id.replace('maximizeButton_', '');
+  currentMaximize = id;
+  let video = document.getElementById(id).cloneNode(true);
+  let targetStream = streams[id];
   video.srcObject = targetStream;
 
-  let selector = document.querySelector(`#selector_${socket_id}`).cloneNode(true);
+  let selector = document.querySelector(`#selector_${id}`).cloneNode(true);
   let minimizeButton = document.createElement('button');
   minimizeButton.innerHTML = 'Minimize';
   minimizeButton.addEventListener('click', handleMinimize);
@@ -369,14 +381,14 @@ function switchMedia() {
 
   localVideo.srcObject = null;
   navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-    for (let socket_id in peers) {
-      for (let index in peers[socket_id].streams[0].getTracks()) {
+    for (let id in peers) {
+      for (let index in peers[id].streams[0].getTracks()) {
         for (let index2 in stream.getTracks()) {
-          if (peers[socket_id].streams[0].getTracks()[index].kind === stream.getTracks()[index2].kind) {
-            peers[socket_id].replaceTrack(
-              peers[socket_id].streams[0].getTracks()[index],
+          if (peers[id].streams[0].getTracks()[index].kind === stream.getTracks()[index2].kind) {
+            peers[id].replaceTrack(
+              peers[id].streams[0].getTracks()[index],
               stream.getTracks()[index2],
-              peers[socket_id].streams[0],
+              peers[id].streams[0],
             );
             break;
           }
@@ -405,8 +417,8 @@ function removeLocalStream() {
     localVideo.srcObject = null;
   }
 
-  for (let socket_id in peers) {
-    removePeer(socket_id);
+  for (let id in peers) {
+    removePeer(id);
   }
 }
 
@@ -451,12 +463,12 @@ function toggleUserList() {
 /**
  * Handle Change of peers status
  */
-function addPeerList(key) {
-  const value = users[key];
+function addPeerList(id) {
+  const value = users[id];
 
   let container = document.createElement('div');
   container.className = 'a-user-container';
-  container.id = `peerList_${key}`;
+  container.id = `peerList_${id}`;
 
   let profileImg = document.createElement('img');
   profileImg.src = value.profile;
@@ -471,8 +483,8 @@ function addPeerList(key) {
   peerListContainer.appendChild(container);
 }
 
-function deletePeerList(socket_id) {
-  const targetContainer = document.querySelector(`#peerList_${socket_id}`);
+function deletePeerList(id) {
+  const targetContainer = document.querySelector(`#peerList_${id}`);
   const targetChildren = (targetContainer && targetContainer.children) || null;
 
   if (targetChildren) {
@@ -486,12 +498,12 @@ function deletePeerList(socket_id) {
 /**
  * Handle change of wait users
  */
-function addWaitList(key) {
-  const value = waitUsers[key];
+function addWaitList(id) {
+  const value = waitUsers[id];
 
   let container = document.createElement('div');
   container.className = 'a-user-container';
-  container.id = `waitList_${key}`;
+  container.id = `waitList_${id}`;
 
   let profileImg = document.createElement('img');
   profileImg.src = value.profile;
@@ -504,13 +516,13 @@ function addWaitList(key) {
   let approveButton = document.createElement('button');
   approveButton.innerHTML = '수락';
   approveButton.className = 'approve-button';
-  approveButton.id = key;
+  approveButton.id = id;
   approveButton.addEventListener('click', handleApprove);
 
   let rejectButton = document.createElement('button');
   rejectButton.innerHTML = '거절';
   rejectButton.className = 'reject-button';
-  rejectButton.id = key;
+  rejectButton.id = id;
   rejectButton.addEventListener('click', handleReject);
 
   container.appendChild(approveButton);
@@ -520,8 +532,8 @@ function addWaitList(key) {
   waitUserContainer.appendChild(container);
 }
 
-function deleteWaitList(socket_id) {
-  const targetContainer = document.querySelector(`#waitList_${socket_id}`);
+function deleteWaitList(id) {
+  const targetContainer = document.querySelector(`#waitList_${id}`);
   const targetChildren = (targetContainer && targetContainer.children) || null;
 
   if (targetChildren) {
@@ -533,18 +545,18 @@ function deleteWaitList(socket_id) {
 }
 
 function handleApprove(e) {
-  const socket_id = e.currentTarget.id;
-  const targetInfo = waitUsers[socket_id];
-  socket.emit('requestJoin', targetInfo, true, socket_id, roomId);
-  delete waitUsers[socket_id];
+  const id = e.currentTarget.id;
+  const targetInfo = waitUsers[id];
+  socket.emit('requestJoin', targetInfo, true, roomId);
+  delete waitUsers[id];
 }
 
 function handleReject(e) {
-  const socket_id = e.currentTarget.id;
-  const targetInfo = waitUsers[socket_id];
-  socket.emit('requestJoin', targetInfo, false, socket_id, roomId);
-  delete waitUsers[socket_id];
-  deleteWaitList(socket_id);
+  const id = e.currentTarget.id;
+  const targetInfo = waitUsers[id];
+  socket.emit('requestJoin', targetInfo, false, id, roomId);
+  delete waitUsers[id];
+  deleteWaitList(id);
 }
 
 /**
