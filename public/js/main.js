@@ -50,6 +50,7 @@ let myProfile = profileBox.value;
 let myInfo;
 
 if (!myName) {
+  window.focus();
   let name = prompt('참여할 이름을 정해주세요 : ');
   myName = name;
   myProfile = '/images/google.png';
@@ -57,7 +58,7 @@ if (!myName) {
 }
 myInfo = { name: myName, userId: myId, profile: myProfile, host: false, joined: false, sessionId: makeid(10) };
 users['myInfo'] = myInfo;
-addPeerList('myInfo');
+addPeerList('myInfo', myInfo);
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
@@ -91,10 +92,10 @@ const configuration = {
 const constraints = {
   video: {
     width: {
-      max: 1280,
+      max: 1920,
     },
     height: {
-      max: 720,
+      max: 1080,
     },
   },
 };
@@ -141,7 +142,7 @@ function init(stream) {
   socket.on('initReceive', (otherInfo) => {
     console.log('INIT RECEIVE ' + otherInfo.name);
     addPeer(false, otherInfo);
-    console.log(otherInfo);
+    // console.log(otherInfo);
     socket.emit('initSend', otherInfo.sessionId, myInfo);
   });
 
@@ -156,11 +157,20 @@ function init(stream) {
   socket.on('removePeer', (id) => {
     console.log('removing peer ' + id);
     removePeer(id);
+    deleteWaitList(id);
   });
 
   /* handle event this client is disconnected. */
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
+    if (!myInfo.joined) {
+      alert('접속이 끊겼습니다. F5를 눌러 새로고침해서 다시 입장을 시도하거나, 서버 관리자에게 문의하십시오.');
+    }
+    if (myInfo.host) {
+      for (const [key] of Object.entries(waitUsers)) {
+        deleteWaitList(key);
+      }
+    }
     socket.emit('restore', myInfo, roomId);
   });
 
@@ -207,7 +217,6 @@ function removePeer(sessionId) {
   }
   if (peers[sessionId]) peers[sessionId].destroy();
   delete peers[sessionId];
-  delete users[sessionId];
   if (meterRefreshs[sessionId]) {
     delete meterRefreshs[sessionId];
   }
@@ -225,12 +234,9 @@ function addPeer(am_initiator, userInfo) {
     config: configuration,
   });
 
-  users[id] = userInfo;
   deleteWaitList(id);
-  addPeerList(id);
 
   peers[id].on('signal', (data) => {
-    console.log('signaling data : ', data);
     socket.emit(
       'signal',
       {
@@ -242,6 +248,8 @@ function addPeer(am_initiator, userInfo) {
   });
 
   peers[id].on('stream', (stream) => {
+    addPeerList(id, userInfo);
+
     /* create name tag */
     let nameTag = document.createElement('span');
     nameTag.className = 'user-name';
@@ -463,7 +471,8 @@ function toggleUserList() {
 /**
  * Handle Change of peers status
  */
-function addPeerList(id) {
+function addPeerList(id, userInfo) {
+  users[id] = userInfo;
   const value = users[id];
 
   let container = document.createElement('div');
@@ -484,6 +493,9 @@ function addPeerList(id) {
 }
 
 function deletePeerList(id) {
+  if (!users[id]) {
+    return;
+  }
   const targetContainer = document.querySelector(`#peerList_${id}`);
   const targetChildren = (targetContainer && targetContainer.children) || null;
 
@@ -493,6 +505,8 @@ function deletePeerList(id) {
     }
     targetContainer.parentNode.removeChild(targetContainer);
   }
+
+  delete users[id];
 }
 
 /**
@@ -533,6 +547,9 @@ function addWaitList(id) {
 }
 
 function deleteWaitList(id) {
+  if (!waitUsers[id]) {
+    return;
+  }
   const targetContainer = document.querySelector(`#waitList_${id}`);
   const targetChildren = (targetContainer && targetContainer.children) || null;
 
@@ -542,20 +559,20 @@ function deleteWaitList(id) {
     }
     targetContainer.parentNode.removeChild(targetContainer);
   }
+  delete waitUsers[id];
 }
 
 function handleApprove(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
   socket.emit('requestJoin', targetInfo, true, roomId);
-  delete waitUsers[id];
+  deleteWaitList(id);
 }
 
 function handleReject(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
   socket.emit('requestJoin', targetInfo, false, id, roomId);
-  delete waitUsers[id];
   deleteWaitList(id);
 }
 
