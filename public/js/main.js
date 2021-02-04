@@ -18,7 +18,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const roomId = urlParams.get('id');
 
-/* get document contexts */
+/* ocument contexts */
 const peerListSection = document.querySelector('.section-peer-list');
 const waitUserContainer = peerListSection.querySelector('.wait-container');
 const peerListContainer = peerListSection.querySelector('.peer-container');
@@ -32,6 +32,8 @@ const localUserTag = document.getElementById('local-user-name');
 const nameBox = document.querySelector('#info-user-name');
 const idBox = document.querySelector('#info-user-id');
 const profileBox = document.querySelector('#info-user-profile');
+const sessionBox = document.querySelector('#info-user-session');
+const statusBox = document.querySelector('#info-status');
 
 /* parse userinfo */
 function makeid(length) {
@@ -44,10 +46,12 @@ function makeid(length) {
   return result;
 }
 
+let myInfo;
 let myName = nameBox.value;
 let myId = idBox.value;
 let myProfile = profileBox.value;
-let myInfo;
+let mySessionId = sessionBox.value;
+let status = statusBox.value;
 
 if (!myName) {
   window.focus();
@@ -56,7 +60,7 @@ if (!myName) {
   myProfile = '/images/google.png';
   myId = makeid(30);
 }
-myInfo = { name: myName, userId: myId, profile: myProfile, host: false, joined: false, sessionId: makeid(10) };
+myInfo = { name: myName, userId: myId, profile: myProfile, sessionId: mySessionId, status: status };
 users['myInfo'] = myInfo;
 addPeerList('myInfo', myInfo);
 
@@ -77,8 +81,6 @@ const configuration = {
     {
       urls: 'stun:stun.l.google.com:19302',
     },
-    // public turn server from https://gist.github.com/sagivo/3a4b2f2c7ac6e1b5267c2f1f59ac6c6b
-    // set your own servers here
     {
       url: 'turn:192.158.29.39:3478?transport=udp',
       credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
@@ -100,26 +102,22 @@ const constraints = {
   },
 };
 
-/**
- * initialize the socket connections
- */
+// initialize the socket connections
 function init(stream) {
   socket = io();
 
-  /* set my name & title name as roomId*/
+  /* set my name, title*/
   localUserTag.innerText = myInfo.name;
   document.title = `Translate | ${roomId}`;
 
-  /* initialize */
   socket.emit('init', myInfo, roomId);
 
-  socket.on('host', () => {
-    myInfo.host = true;
-    myInfo.joined = true;
-    console.log('host : ', myInfo.host);
+  /*****************************/
+  socket.on('host', (updatedStatus) => {
+    myInfo.status = updatedStatus;
   });
 
-  /* handle join request */
+  /*****************************/
   socket.on('requestJoin', (userInfo) => {
     window.focus();
     console.log('request Join');
@@ -131,50 +129,51 @@ function init(stream) {
     toggleUserList();
   });
 
-  /* handle room host reject joining */
+  /*****************************/
+  socket.on('approvedJoin', (updatedStatus) => {
+    myInfo.status = updatedStatus;
+  });
+
+  /*****************************/
   socket.on('rejectJoin', () => {
     window.focus();
     alert('방장이 입장을 거부했습니다.');
     exit();
   });
 
-  /* handle initReceive from new client */
+  /*****************************/
   socket.on('initReceive', (otherInfo) => {
     console.log('INIT RECEIVE ' + otherInfo.name);
     addPeer(false, otherInfo);
-    // console.log(otherInfo);
     socket.emit('initSend', otherInfo.sessionId, myInfo);
   });
 
-  /* handle initSend from existed client */
+  /*****************************/
   socket.on('initSend', (otherInfo) => {
     console.log('INIT SEND ' + otherInfo.name);
     myInfo.joined = true;
     addPeer(true, otherInfo);
   });
 
-  /* handle remove peer */
+  /*****************************/
   socket.on('removePeer', (id) => {
     console.log('removing peer ' + id);
     removePeer(id);
     deleteWaitList(id);
   });
 
-  /* handle event this client is disconnected. */
+  /*****************************/
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
-    if (!myInfo.joined) {
-      alert('접속이 끊겼습니다. F5를 눌러 새로고침해서 다시 입장을 시도하거나, 서버 관리자에게 문의하십시오.');
+
+    for (const [key] of Object.entries(waitUsers)) {
+      deleteWaitList(key);
     }
-    if (myInfo.host) {
-      for (const [key] of Object.entries(waitUsers)) {
-        deleteWaitList(key);
-      }
-    }
+
     socket.emit('restore', myInfo, roomId);
   });
 
-  /* signaling */
+  /*****************************/
   socket.on('signal', (data) => {
     peers[data.sessionId].signal(data.signal);
   });
@@ -185,7 +184,6 @@ function init(stream) {
 /**
  * Remove a peer with given session id.
  * Removes the video element and deletes the connection
- * @param {String} sessionId
  */
 function removePeer(sessionId) {
   //handle if target video is current maximized video.
@@ -200,6 +198,7 @@ function removePeer(sessionId) {
   let videoSelector = document.getElementById(`selector_${sessionId}`);
   let videoContainer = document.getElementById(`container_${sessionId}`);
   let meter = document.getElementById(`meter_${sessionId}`);
+
   if (videoEl) {
     if (videoEl.srcObject) {
       const tracks = videoEl.srcObject.getTracks();
@@ -215,12 +214,13 @@ function removePeer(sessionId) {
       videoContainer.parentNode.removeChild(videoContainer);
     }
   }
-  if (peers[sessionId]) peers[sessionId].destroy();
-  delete peers[sessionId];
+  if (peers[sessionId]) {
+    peers[sessionId].destroy();
+    delete peers[sessionId];
+  }
   if (meterRefreshs[sessionId]) {
     delete meterRefreshs[sessionId];
   }
-  // addPeerList();
   deletePeerList(sessionId);
   deleteWaitList(sessionId);
 }
@@ -236,6 +236,7 @@ function addPeer(am_initiator, userInfo) {
 
   deleteWaitList(id);
 
+  /*****************************/
   peers[id].on('signal', (data) => {
     socket.emit(
       'signal',
@@ -247,6 +248,7 @@ function addPeer(am_initiator, userInfo) {
     );
   });
 
+  /*****************************/
   peers[id].on('stream', (stream) => {
     addPeerList(id, userInfo);
 
@@ -350,18 +352,21 @@ function handleMaximize(e) {
   mainVideoContainer.appendChild(minimizeButton);
   mainVideoContainer.setAttribute('style', 'display: flex');
 
-  document.body.scrollTop = 0; // For Safari
-  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+  // For Safari
+  document.body.scrollTop = 0;
+
+  // For Chrome, Firefox, IE and Opera
+  document.documentElement.scrollTop = 0;
 }
 
-/* handle minimize event */
+/*****************************/
 function handleMinimize() {
   currentMaximize = null;
   mainVideoContainer.innerHTML = '';
   mainVideoContainer.setAttribute('style', 'display: none');
 }
 
-/* handle sound device change */
+/*****************************/
 function handleSoundChange(e) {
   console.log('handle sound change');
   let selector = document.getElementById(e.target.id);
@@ -377,9 +382,7 @@ function handleSoundChange(e) {
   }
 }
 
-/**
- * Switches the camera between user and environment. It will just enable the camera 2 cameras not supported.
- */
+/*****************************/
 function switchMedia() {
   const tracks = localStream.getTracks();
 
@@ -411,9 +414,7 @@ function switchMedia() {
   });
 }
 
-/**
- * Disables and removes the local stream and all the connections to other peers.
- */
+/*****************************/
 function removeLocalStream() {
   if (localStream) {
     const tracks = localStream.getTracks();
@@ -430,9 +431,7 @@ function removeLocalStream() {
   }
 }
 
-/**
- * Enable/disable microphone
- */
+/*****************************/
 function toggleMute() {
   for (let index in localStream.getAudioTracks()) {
     localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled;
@@ -443,9 +442,8 @@ function toggleMute() {
     buttonImage.src = buttonStatus;
   }
 }
-/**
- * Enable/disable video
- */
+
+/*****************************/
 function toggleVid() {
   for (let index in localStream.getVideoTracks()) {
     console.log(localStream.getVideoTracks());
@@ -456,9 +454,7 @@ function toggleVid() {
   }
 }
 
-/**
- * Toggle userList
- */
+/*****************************/
 function toggleUserList() {
   showUserList = !showUserList;
   if (showUserList) {
@@ -468,9 +464,7 @@ function toggleUserList() {
   }
 }
 
-/**
- * Handle Change of peers status
- */
+/*****************************/
 function addPeerList(id, userInfo) {
   users[id] = userInfo;
   const value = users[id];
@@ -492,6 +486,7 @@ function addPeerList(id, userInfo) {
   peerListContainer.appendChild(container);
 }
 
+/*****************************/
 function deletePeerList(id) {
   if (!users[id]) {
     return;
@@ -509,9 +504,7 @@ function deletePeerList(id) {
   delete users[id];
 }
 
-/**
- * Handle change of wait users
- */
+/*****************************/
 function addWaitList(id) {
   const value = waitUsers[id];
 
@@ -546,6 +539,7 @@ function addWaitList(id) {
   waitUserContainer.appendChild(container);
 }
 
+/*****************************/
 function deleteWaitList(id) {
   if (!waitUsers[id]) {
     return;
@@ -562,6 +556,7 @@ function deleteWaitList(id) {
   delete waitUsers[id];
 }
 
+/*****************************/
 function handleApprove(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
@@ -569,6 +564,7 @@ function handleApprove(e) {
   deleteWaitList(id);
 }
 
+/*****************************/
 function handleReject(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
@@ -576,9 +572,7 @@ function handleReject(e) {
   deleteWaitList(id);
 }
 
-/**
- * Handle exit button event
- */
+/*****************************/
 function exit() {
   window.focus();
   const result = confirm('회의를 나가시겠습니까?');
@@ -587,9 +581,7 @@ function exit() {
   }
 }
 
-/**
- * Handle toggle config modal window
- */
+/*****************************/
 function toggleConfig() {
   showConfigModal = !showConfigModal;
   if (showConfigModal) {
@@ -599,18 +591,14 @@ function toggleConfig() {
   }
 }
 
-/**
- * updating text of buttons
- */
+/*****************************/
 function updateButtons() {
   for (let index in localStream.getVideoTracks()) {
-    // vidButton.innerText = localStream.getVideoTracks()[index].enabled ? 'Video Enabled' : 'Video Disabled';
     let buttonStatus = localStream.getVideoTracks()[index].enabled ? '/fonts/video.svg' : '/fonts/video-slash.svg';
     let buttonImage = document.getElementById('videoButtonImage');
     buttonImage.src = buttonStatus;
   }
   for (let index in localStream.getAudioTracks()) {
-    // muteButton.innerText = localStream.getAudioTracks()[index].enabled ? 'Unmuted' : 'Muted';
     let buttonStatus = localStream.getAudioTracks()[index].enabled
       ? '/fonts/microphone.svg'
       : '/fonts/microphone-slash.svg';
@@ -619,9 +607,11 @@ function updateButtons() {
   }
 }
 
+/*****************************/
 function gotDevices(deviceInfos) {
   console.log(deviceInfos);
   current_deviceInfos = deviceInfos;
+  
   // Handles being called several times to update labels. Preserve values.
   const values = selectors.map((select) => select.value);
   selectors.forEach((select) => {
@@ -649,17 +639,24 @@ function gotDevices(deviceInfos) {
   });
 }
 
+/*****************************/
 function gotStream(stream) {
   window.stream = stream;
-  localStream = stream; // make stream available to console
+  
+  // make stream available to console
+  localStream = stream;
   videoElement.srcObject = stream;
-  return navigator.mediaDevices.enumerateDevices(); // Refresh button list in case labels have become available
+
+  // Refresh button list in case labels have become available
+  return navigator.mediaDevices.enumerateDevices();
 }
 
+/*****************************/
 function handleError(error) {
   console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
 
+/*****************************/
 let start_i = 0;
 function start() {
   if (window.stream) {

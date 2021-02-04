@@ -1,6 +1,6 @@
 module.exports = {
-  // secret: process.env.SESSION_SECRET,
-  secret: 'session secrets',
+  secret: process.env.SESSION_KEY,
+  // secret: 'session secrets',
   resave: false,
   saveUninitialized: false,
 };

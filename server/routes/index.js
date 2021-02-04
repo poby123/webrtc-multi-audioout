@@ -1,19 +1,10 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 
-function checkSignin(req) {
-  return !!req.user;
-}
-
-function makeid(length) {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
+const utility = require('../utility/utility');
+const encryptObj = utility.encryptObj;
+const makeid = utility.makeid;
+const checkSignin = utility.checkSignin;
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -21,15 +12,30 @@ router.get('/', function (req, res) {
   const roomId = req.query.id;
 
   if (type == 'join' && roomId) {
+    let status = { host: false, joined: false };
+    status = encryptObj(status);
+
     if (checkSignin(req)) {
       const user = req.user;
-      res.render('rtc', { username: user.displayName, userid: user.id, profile: user.photos[0].value });
+      res.render('rtc', {
+        username: user.displayName,
+        userid: user.id,
+        profile: user.photos[0].value,
+        sessionId: new Date().getTime().toString() + makeid(10),
+        status: status,
+      });
     } else {
-      res.render('rtc', { username: '', userid: '', profile: '' });
+      res.render('rtc', {
+        username: '',
+        userid: '',
+        profile: '',
+        sessionId: new Date().getTime().toString() + makeid(10),
+        status: status,
+      });
     }
   } else if (type == 'create') {
     if (checkSignin(req)) {
-      const roomId = makeid(7);
+      const roomId = makeid(11);
       res.redirect(`/?type=join&id=${roomId}`);
     } else {
       res.redirect('/');

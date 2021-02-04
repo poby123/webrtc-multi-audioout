@@ -1,11 +1,12 @@
-peers = {}; //peers[session id] = socket
-rooms = {}; //rooms[session id] = roomId
-creators = {}; //creators[roomId] = {sessionId: [host session id], userId:''};
+peers = {};
+ooms = {};
+creators = {};
+const utility = require('../utility/utility');
+const encryptObj = utility.encryptObj;
+const decryptObj = utility.decryptObj;
 
 module.exports = (io) => {
   io.on('connect', (socket) => {
-    console.log('a client is connected : ', socket.id);
-
     socket.on('init', (userInfo, roomId) => {
       peers[userInfo.sessionId] = socket;
       socket.join(roomId);
@@ -32,7 +33,9 @@ module.exports = (io) => {
             peers[id].emit('initReceive', userInfo);
           }
         }
-        socket.emit('host');
+
+        const updatedStatus = encryptObj({ host: true, joined: true });
+        socket.emit('host', updatedStatus);
       }
       // Participants
       else {
@@ -57,6 +60,9 @@ module.exports = (io) => {
           console.log('sending init receive to ' + sessionId);
           peers[id].emit('initReceive', userInfo);
         }
+
+        const updatedStatus = encryptObj({ host: false, joined: true });
+        peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
       } else {
         userInfo && console.log(userInfo.name + 'is rejected');
         peers[sessionId] && peers[sessionId].emit('rejectJoin');
@@ -70,7 +76,6 @@ module.exports = (io) => {
 
     socket.on('signal', (data, sessionId) => {
       if (!peers[data.sessionId]) return;
-      // console.log('signaling sessionId : ', sessionId);
       peers[data.sessionId].emit('signal', {
         sessionId: sessionId,
         signal: data.signal,
@@ -78,9 +83,12 @@ module.exports = (io) => {
     });
 
     socket.on('restore', (userInfo, roomId) => {
-      if (!userInfo || !userInfo.joined) {
+      const userStatus = decryptObj(userInfo.status);
+
+      if (!userInfo || !userStatus.joined) {
         return;
       }
+
       console.log('restore...');
       const sessionId = userInfo.sessionId;
       socket.sessionId = sessionId;
@@ -88,7 +96,7 @@ module.exports = (io) => {
       peers[sessionId] = socket;
       rooms[sessionId] = roomId;
 
-      if (userInfo.host) {
+      if (userStatus.host) {
         console.log('restore Host of room : ', roomId);
         if (!creators[roomId]) {
           creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
