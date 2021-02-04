@@ -1,5 +1,5 @@
 peers = {};
-ooms = {};
+rooms = {};
 creators = {};
 const utility = require('../utility/utility');
 const encryptObj = utility.encryptObj;
