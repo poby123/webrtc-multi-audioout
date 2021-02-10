@@ -1,9 +1,12 @@
-peers = {};
-rooms = {};
-creators = {};
 const utility = require('../utility/utility');
 const encryptObj = utility.encryptObj;
 const decryptObj = utility.decryptObj;
+
+let Room = require('./room');
+peers = Room.peers;
+rooms = Room.rooms;
+creators = Room.creators;
+roomsList = Room.roomsList;
 
 module.exports = (io) => {
   io.on('connect', (socket) => {
@@ -11,7 +14,7 @@ module.exports = (io) => {
       peers[userInfo.sessionId] = socket;
       socket.join(roomId);
       socket.sessionId = userInfo.sessionId;
-      console.log('join sessionId : ', socket.sessionId);
+      console.log('[LOG] : JOIN => ', socket.sessionId);
 
       // Hosts
       if (!creators[roomId] || creators[roomId].userId == userInfo.userId) {
@@ -20,16 +23,15 @@ module.exports = (io) => {
         const userId = userInfo.userId;
 
         if (!creators[roomId]) {
-          console.log('create room');
+          console.log('[LOG] : CREATE ROOM => ', roomId);
           creators[roomId] = { sessionId: [sessionId], userId: userId };
         } else if (creators[roomId].userId == userId) {
-          console.log('add 방장');
+          console.log('[LOG] : ADD HOST');
           creators[roomId].sessionId.push(sessionId);
 
           for (let id in peers) {
             if (id === sessionId) continue;
             if (rooms[id] != rooms[sessionId]) continue;
-            console.log('sending init receive to ' + socket.id);
             peers[id].emit('initReceive', userInfo);
           }
         }
@@ -57,20 +59,18 @@ module.exports = (io) => {
         for (let id in peers) {
           if (id === sessionId) continue;
           if (rooms[id] != rooms[sessionId]) continue;
-          console.log('sending init receive to ' + sessionId);
           peers[id].emit('initReceive', userInfo);
         }
 
         const updatedStatus = encryptObj({ host: false, joined: true });
         peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
       } else {
-        userInfo && console.log(userInfo.name + 'is rejected');
+        userInfo && console.log('[LOG] : ', userInfo.name + 'is rejected');
         peers[sessionId] && peers[sessionId].emit('rejectJoin');
       }
     });
 
     socket.on('initSend', (id, userInfo) => {
-      console.log('INIT SEND by ' + socket.id + ' for ' + id);
       peers[id] && peers[id].emit('initSend', userInfo);
     });
 
@@ -89,15 +89,16 @@ module.exports = (io) => {
         return;
       }
 
-      console.log('restore...');
+      console.log('[LOG] : RESTORE...');
       const sessionId = userInfo.sessionId;
       socket.sessionId = sessionId;
       socket.join(roomId);
       peers[sessionId] = socket;
       rooms[sessionId] = roomId;
+      roomsList[roomId] = true;
 
       if (userStatus.host) {
-        console.log('restore Host of room : ', roomId);
+        console.log('[LOG] : RESTORE HOST OF : ', roomId);
         if (!creators[roomId]) {
           creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
         } else if (creators[roomId].userId == userInfo.userId) {
@@ -107,7 +108,7 @@ module.exports = (io) => {
     });
 
     socket.on('disconnect', () => {
-      console.log('socket disconnected ' + socket.sessionId);
+      console.log('[LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
       const sessionId = socket.sessionId;
       const targetRoom = rooms[sessionId];
 
@@ -116,7 +117,7 @@ module.exports = (io) => {
       delete socket[sessionId];
 
       if (creators[targetRoom] && creators[targetRoom].sessionId.includes(sessionId)) {
-        console.log('방장 연결 끊김.');
+        console.log('[LOG] : HOST IS DISCONNECTED');
         let target;
         creators[targetRoom].sessionId.forEach((element, i) => {
           if (element == sessionId) {
@@ -128,6 +129,7 @@ module.exports = (io) => {
 
       if (!io.sockets.adapter.rooms.get(rooms[sessionId])) {
         delete creators[targetRoom];
+        delete roomsList[targetRoom];
       }
 
       if (rooms[sessionId]) {
