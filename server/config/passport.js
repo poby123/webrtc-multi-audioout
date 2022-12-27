@@ -2,9 +2,6 @@ let passport = require('passport');
 let GoogleStrategy = require('passport-google-oauth2').Strategy;
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = require('./constants');
 
-console.log('client id: ', GOOGLE_CLIENT_ID);
-console.log('client secret: ', GOOGLE_CLIENT_SECRET);
-
 // Strategy 성공시 호출됨.
 passport.serializeUser(function (user, done) {
   done(null, user); // 여기의 user가 desiralizeUser의 첫 번째 매개변수로 전달된다.
@@ -25,7 +22,6 @@ passport.use(
       proxy: true,
     },
     function (request, accessToken, refreshToken, profile, done) {
-      console.log('profile: ', profile);
       done(null, profile);
     },
   ),

@@ -19,6 +19,7 @@ select:hover{
   top: 0;
   width: 20vw;
   height: 90vh;
+  z-index: 100;
   background-color: white;
 
   display: none;

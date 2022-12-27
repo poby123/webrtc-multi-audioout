@@ -1,16 +1,17 @@
-var createError = require('http-errors');
+const createError = require('http-errors');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var passport = require('passport');
-var session = require('express-session');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const passport = require('passport');
+const session = require('express-session');
+require('ejs');
 
-var session_config = require('./server/config/session');
-let socketController = require('./server/controllers/socketController');
+const session_config = require('./server/config/session');
+const socketController = require('./server/controllers/socketController');
 
 // https server options
 const options = {
@@ -19,16 +20,16 @@ const options = {
 }; 
 
 // app, server
-let app = express();
+const app = express();
 // let server = http.createServer(app);
-let server = https.createServer(options, app);
-let io = require('socket.io')(server);
+const server = https.createServer(options, app);
+const io = require('socket.io')(server);
 
 socketController(io);
 
 // routers
-var indexRouter = require('./server/routes/index');
-var authRouter = require('./server/routes/auth');
+const indexRouter = require('./server/routes/index');
+const authRouter = require('./server/routes/auth');
 
 // session
 app.use(session(session_config));
@@ -39,7 +40,7 @@ app.use(passport.session());
 app.set('views', path.join(__dirname, '/server/views'));
 app.set('view engine', 'ejs');
 
-app.use(logger('dev'));
+app.use(logger('combined', { skip: function (req, res) { return res.statusCode < 400 } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());

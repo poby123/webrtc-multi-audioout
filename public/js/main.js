@@ -57,7 +57,7 @@ function init() {
     const otherId = userInfo.sessionId;
     waitUsers[otherId] = userInfo;
     addWaitList(otherId);
-    toggleUserList(false);
+    toggleUserList(true);
   });
 
   /*****************************/

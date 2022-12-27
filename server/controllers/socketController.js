@@ -44,7 +44,6 @@ module.exports = (io) => {
         if (creators[roomId]) {
           const creatorIds = creators[roomId].sessionId;
           creatorIds.forEach((id) => {
-            console.log(id);
             peers[id].emit('requestJoin', userInfo);
           });
         }

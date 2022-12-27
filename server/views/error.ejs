@@ -1,3 +1,25 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        ERROR
+    </title>
+    <link rel="stylesheet" href="/styles/index.css">
+</head>
+
+<body>
+    <section class="error-section">
+        <div class="container">
+            <p>
+                <h1>ERROR <%=error.status%></h1>
+            </p>
+            <p>
+                <%=message%>
+            </p>
+
+        </div>
+    </section>
+</body>
