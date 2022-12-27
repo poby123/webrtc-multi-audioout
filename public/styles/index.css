@@ -1,0 +1,181 @@
+@charset "utf-8";
+@font-face {
+  font-family: 'BalooDa2';
+  src: url('/fonts/BalooDa2-Regular.ttf');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'BalooDa2';
+  src: url('/fonts/BalooDa2-SemiBold.ttf');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'Nanum Gothic';
+  font-style: normal;
+  font-weight: normal;
+  src: url('/fonts/NanumGothic/NanumGothic-Regular.eot');
+  src: url('/fonts/NanumGothic/NanumGothic-Regular.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/NanumGothic/NanumGothic-Regular.woff2') format('woff2'),
+    url('/fonts/NanumGothic/NanumGothic-Regular.woff') format('woff'),
+    url('/fonts/NanumGothic/NanumGothic-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Nanum Gothic';
+  font-style: normal;
+  font-weight: bold;
+  src: url('/fonts/NanumGothic/NanumGothic-Bold.eot');
+  src: url('/fonts/NanumGothic/NanumGothic-Bold.eot?#iefix') format('embedded-opentype'),
+    url('/fonts/NanumGothic/NanumGothic-Bold.woff2') format('woff2'),
+    url('/fonts/NanumGothic/NanumGothic-Bold.woff') format('woff'),
+    url('/fonts/NanumGothic/NanumGothic-Bold.ttf') format('truetype');
+}
+body {
+  margin: 0;
+}
+button {
+  background: none;
+  border: none;
+  outline: none;
+}
+a {
+  text-decoration: none;
+}
+button:hover {
+  cursor: pointer;
+}
+.icon {
+  display: inline-block;
+  background-size: cover;
+  width: 35px;
+  height: 35px;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* section-header */
+.section-header {
+  position: fixed;
+  top: 0;
+  height: 20vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  /* border: 1px solid red; */
+}
+.section-header .container {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* border: 1px solid green; */
+}
+.section-header .unsigned-user-button {
+  /* background-image: url(''); */
+  filter: invert(100%);
+}
+.section-header .signed-user-button {
+  border-radius: 50%;
+}
+
+/* section user-menu */
+.section-user-menu {
+  position: absolute;
+  display: none;
+  top: 20vh;
+  right: 0;
+  height: 20vh;
+  width: 10em;
+  background-color: #d456a0;
+  color: white;
+}
+.section-user-menu .container {
+  width: 80%;
+  margin: 0.2em auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.section-user-menu .profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.section-user-menu .user-name {
+  margin-right: 1em;
+  font-family: 'Nanum Gothic';
+}
+.section-user-menu .signout {
+  filter: invert(100%);
+}
+.section-user-menu .button-container {
+  width: 100%;
+  justify-content: flex-start;
+  /* border: 1px solid white; */
+}
+.section-user-menu h2 {
+  font-family: 'BalooDa2';
+}
+.section-user-menu .oauth-image {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+}
+
+/* sectionA */
+.sectionA {
+  min-height: 100vh;
+  background-image: url('/images/background1.jpg');
+  background-position: center;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sectionA .container {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.sectionA h1 {
+  font-size: 7vh;
+  font-family: 'BalooDa2';
+  color: white;
+}
+
+#create-room {
+  background: #6540c9;
+  color: white;
+}
+
+.sectionA button {
+  border-radius: 5px;
+  font-family: 'Nanum Gothic';
+  font-size: 17px;
+  line-height: 2em;
+  background-color: white;
+  margin-right: 1em;
+  padding: 0 2em;
+}
+
+.sectionA .sub-container {
+  flex-direction: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%=title%>
+    </title>
+    <link rel="stylesheet" href="/styles/index.css">
+</head>
+
+<body>
+    <section class="section-header">
+        <div class="container">
+            <% let userButtonClassName=user ? 'signed-user-button' : 'unsigned-user-button' ; let backgroundImage=user ?
+                user.photos[0].value : '/fonts/user-circle.svg' ; %>
+                <button id="user-button" class="<%=userButtonClassName%> icon"
+                    style="background-image: url('<%=backgroundImage%>');">
+                </button>
+        </div>
+    </section>
+    <section class="section-user-menu">
+        <div class="container noselect">
+            <%if(user){%>
+                <div class="profile-container">
+                    <span class="user-name">
+                        <%=user.displayName%>
+                    </span>
+                    <a href="/auth/signout"><img src="/fonts/sign-out-alt.svg" class="icon signout" alt=""></a>
+                </div>
+                <%}else{ %>
+                    <h2>Sign in</h2>
+                    <div class="button-container">
+                        <a href="/auth/google">
+                            <img class="oauth-image" src="/images/google.png" alt="google login">
+                        </a>
+                    </div>
+                    <%}%>
+        </div>
+    </section>
+    <section class="sectionA">
+        <div class="container noselect">
+            <h1>
+                <%=title%>
+            </h1>
+            <div class="sub-container">
+                <button id="create-room">새로운 방</button>
+                <button id="join-room">참여하기</button>
+            </div>
+        </div>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        let userBtn = $('#user-button');
+        let createBtn = $('#create-room');
+        let joinBtn = $('#join-room');
+
+        let ASection = $('.sectionA').not('button');
+        let userMenuSection = $('.section-user-menu');
+
+        let showUserMenu = false;
+
+        let msg = '<%=msg%>';
+        if (msg) {
+            alert(msg);
+            window.location.href = '/';
+        }
+
+        function toggleUserMenu() {
+            userMenuSection.animate({ width: 'toggle' });
+            showUserMenu = !showUserMenu;
+        }
+
+        createBtn.on('click', () => {
+            if ('<%=user%>') {
+                location.href = `/?type=create`;
+            } else {
+                alert('로그인이 필요한 서비스입니다.');
+                if (!showUserMenu) {
+                    toggleUserMenu();
+                }
+            }
+        });
+
+        joinBtn.on('click', () => {
+            const id = prompt('참여할 방의 아이디를 입력해주세요: ');
+            console.log(id);
+            if (id) {
+                location.href = `/?type=join&id=${id}`;
+            }
+        });
+
+        userBtn.on('click', () => {
+            toggleUserMenu();
+        });
+
+    </script>
+</body>
+
+</html>
