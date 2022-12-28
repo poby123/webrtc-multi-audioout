@@ -16,6 +16,7 @@ const configuration = {
 /**
  * UserMedia constraints
  */
+//  JSON.parse(localStorage.getItem('webrtc_constraint')) || 
 const constraints = {
     video: {
         width: 1280,

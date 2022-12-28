@@ -31,8 +31,9 @@ function SoundMeter(context) {
         clipcount += 1;
       }
     }
-    that.instant = Math.sqrt(sum / input.length);
-    that.slow = 0.95 * that.slow + 0.05 * that.instant;
+
+    that.instant = Math.sqrt(sum / 48);
+    that.slow = Math.max(instant, that.slow * 0.9)
     that.clip = clipcount / input.length;
   };
 }
@@ -42,7 +43,6 @@ SoundMeter.prototype.connectToSource = function (stream, callback) {
   try {
     this.mic = this.context.createMediaStreamSource(stream);
     this.mic.connect(this.script);
-    // necessary to make sample run, but should not be.
     this.script.connect(this.context.destination);
     if (typeof callback !== 'undefined') {
       callback(null);

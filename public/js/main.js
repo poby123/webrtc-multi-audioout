@@ -117,6 +117,10 @@ function addPeer(am_initiator, userInfo) {
     initiator: am_initiator,
     stream: localStream,
     config: configuration,
+    sdpTransform: (sdp) => { 
+      sdp.replace('useinbandfec=1', 'useinbandfec=1; stereo=1; maxaveragebitrate=510000');
+      return sdp 
+    },
   });
 
   deleteWaitList(id);
@@ -187,9 +191,9 @@ function removePeer(sessionId) {
 function switchMedia() {
   const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
-  constraints.audio = { deviceId: audioSource ? { exact: audioSource } : undefined };
-  constraints.video = { deviceId: videoSource ? { exact: videoSource } : undefined };
-
+  constraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
+  constraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
+  localStorage.setItem('webrtc_constraints', JSON.stringify(constraints));
   
   const tracks = localStream.getTracks();
   const videoState = localStream.getVideoTracks()[0].enabled;
@@ -263,7 +267,10 @@ function handleReject(e) {
 async function getDevices() {
   const devices = await navigator.mediaDevices.enumerateDevices();
   current_deviceInfos = devices;
-  
+
+  const currentAudioInputDeviceId = constraints.audio?.deviceId?.exact;
+  const currentVideoInputDeviceId = constraints.video?.deviceId?.exact;
+
   // Handles being called several times to update labels. Preserve values.
   const values = selectors.map((select) => select.value);
   selectors.forEach((select) => {
@@ -273,8 +280,11 @@ async function getDevices() {
   });
   for (const {deviceId, label, kind} of devices) {
     const option = document.createElement('option');
-
     option.value = deviceId;
+
+    (currentAudioInputDeviceId === deviceId) && (option.selected = true);
+    (currentVideoInputDeviceId === deviceId) && (option.selected = true);
+
     if (kind === 'audioinput') {
       option.text = label || `microphone ${audioInputSelect.length + 1}`;
       audioInputSelect.appendChild(option);
@@ -302,8 +312,8 @@ async function getStream() {
 
 async function start() {
   try{
-    await getStream();
     await getDevices();
+    await getStream();
   }
   catch(e){
     console.log(e);

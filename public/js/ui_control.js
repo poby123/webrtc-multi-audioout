@@ -207,11 +207,11 @@ function createParticipantsContainer(id, userInfo, stream) {
     videoContainer.appendChild(videoSelector);
     videoContainer.appendChild(maximizeButton);
 
-    current_deviceInfos.forEach((info) => {
-        if (info.kind === 'audiooutput') {
-            let option = document.createElement('option');
-            option.value = info.deviceId;
-            option.text = info.label || `speaker ${parent.length + 1}`;
+    current_deviceInfos.forEach(({kind, label, deviceId}) => {
+        if (kind === 'audiooutput') {
+            const option = document.createElement('option');
+            option.value = deviceId;
+            option.text = label || `speaker ${parent.length + 1}`;
             videoSelector.appendChild(option);
         }
     });
