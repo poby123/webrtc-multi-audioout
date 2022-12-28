@@ -19,7 +19,7 @@ if (!myName) {
   } while (!name)
 
   myName = name;
-  myProfile = '/images/google.png';
+  myProfile = '/images/default_profile.webp';
   myId = makeid(30);
 }
 
@@ -151,7 +151,7 @@ function addPeer(am_initiator, userInfo) {
 function removePeer(sessionId) {
 
   if (streams[sessionId]) {
-    if (sessionId == currentMaximize) {
+    if (sessionId == currentMaximizedId) {
       handleMinimize();
     }
     delete streams[sessionId];

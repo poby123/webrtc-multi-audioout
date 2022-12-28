@@ -2,46 +2,54 @@ const peerListSection = document.querySelector('.section-peer-list');
 const waitUserContainer = peerListSection.querySelector('.wait-container');
 const peerListContainer = peerListSection.querySelector('.peer-container');
 
-const mainVideoSection = document.querySelector('.section-main-video');
-const mainVideoContainer = mainVideoSection.querySelector('.container');
+const maximizedVideoSection = document.querySelector('.section-maximized-video');
+const videoSection = document.querySelector('.section-videos');
 
-let currentMaximize = undefined;
+let currentMaximizedId = undefined;
 let showConfigModal = false;
 let showUserList = false;
 
 function handleMaximize(e) {
-    let id = e.currentTarget.id.replace('maximizeButton_', '');
-    currentMaximize = id;
-    let video = document.getElementById(id).cloneNode(true);
-    let targetStream = streams[id];
-    video.srcObject = targetStream;
-
-    let selector = document.querySelector(`#selector_${id}`).cloneNode(true);
-    let minimizeButton = document.createElement('button');
-    minimizeButton.innerHTML = 'Minimize';
-    minimizeButton.addEventListener('click', handleMinimize);
-
-    mainVideoContainer.innerHTML = '';
-    mainVideoContainer.appendChild(video);
-    mainVideoContainer.appendChild(selector);
-    mainVideoContainer.appendChild(minimizeButton);
-    mainVideoContainer.setAttribute('style', 'display: flex');
-
-    // For Safari
-    document.body.scrollTop = 0;
-
-    // For Chrome, Firefox, IE and Opera
-    document.documentElement.scrollTop = 0;
+    const id = e.currentTarget.id.replace('maximizeButton_', '');
+    
+    // toggle maximized section
+    if(currentMaximizedId === id){
+        handleMinimize(e);
+        return;
+    }
+    
+    e.currentTarget.innerText = 'Minimize';
+    currentMaximizedId = id;
+    const selectedContainer = document.getElementById(`container_${id}`);
+    maximizedVideoSection.appendChild(selectedContainer);
+    maximizedVideoSection.setAttribute('style', 'display: flex');
+    videoSection.setAttribute('style', 'display: none');
 }
 
 function handleMinimize() {
-    currentMaximize = null;
-    mainVideoContainer.innerHTML = '';
-    mainVideoContainer.setAttribute('style', 'display: none');
+    if(!currentMaximizedId){
+        alert('[ERROR]: cannot minimize due current maximized value is not defined.');
+        return;
+    }
+
+    const id = currentMaximizedId;
+    currentMaximizedId = null;
+    
+    const selectedContainer = document.getElementById(`container_${id}`);
+    videoSection.appendChild(selectedContainer);
+
+    while(maximizedVideoSection.hasChildNodes()){
+        maximizedVideoSection.removeChild(maximizedVideoSection.firstChild);
+    }
+
+    const button = document.getElementById(`maximizeButton_${id}`);
+    button.innerText = 'Maximize';
+    videoSection.setAttribute('style', 'display: flex');
+    maximizedVideoSection.setAttribute('style', 'display: none');
 }
 
-function toggleConfig() {
-    showConfigModal = !showConfigModal;
+function toggleConfig(show) {
+    showConfigModal = (show === undefined) ? !showConfigModal : show;
     if (showConfigModal) {
         configModal.setAttribute('style', 'display:flex');
     } else {
@@ -81,15 +89,15 @@ function addPeerList(id, userInfo) {
     users[id] = userInfo;
     const value = users[id];
 
-    let container = document.createElement('div');
+    const container = document.createElement('div');
     container.className = 'a-user-container';
     container.id = `peerList_${id}`;
 
-    let profileImg = document.createElement('img');
+    const profileImg = document.createElement('img');
     profileImg.src = value.profile;
     profileImg.className = 'profile-img';
 
-    let nameTag = document.createElement('span');
+    const nameTag = document.createElement('span');
     nameTag.innerHTML = value.name;
     nameTag.className = 'profile-name';
 
@@ -103,14 +111,12 @@ function deletePeerList(id) {
         return;
     }
     const targetContainer = document.querySelector(`#peerList_${id}`);
-    const targetChildren = (targetContainer && targetContainer.children) || null;
 
-    if (targetChildren) {
-        for (let i = 0; i < targetChildren.length; i++) {
-            targetContainer.removeChild(targetChildren[i]);
-        }
-        targetContainer.parentNode.removeChild(targetContainer);
+    while (targetContainer.hasChildNodes()) {
+        targetContainer.removeChild(targetContainer.firstChild);
     }
+
+    targetContainer.parentNode.removeChild(targetContainer);
 
     delete users[id];
 }
@@ -118,25 +124,25 @@ function deletePeerList(id) {
 function addWaitList(id) {
     const value = waitUsers[id];
 
-    let container = document.createElement('div');
+    const container = document.createElement('div');
     container.className = 'a-user-container';
     container.id = `waitList_${id}`;
 
-    let profileImg = document.createElement('img');
+    const profileImg = document.createElement('img');
     profileImg.src = value.profile;
     profileImg.className = 'profile-img';
 
-    let nameTag = document.createElement('span');
+    const nameTag = document.createElement('span');
     nameTag.innerHTML = value.name;
     nameTag.className = 'profile-name';
 
-    let approveButton = document.createElement('button');
+    const approveButton = document.createElement('button');
     approveButton.innerHTML = '수락';
     approveButton.className = 'approve-button';
     approveButton.id = id;
     approveButton.addEventListener('click', handleApprove);
 
-    let rejectButton = document.createElement('button');
+    const rejectButton = document.createElement('button');
     rejectButton.innerHTML = '거절';
     rejectButton.className = 'reject-button';
     rejectButton.id = id;
@@ -153,15 +159,14 @@ function deleteWaitList(id) {
     if (!waitUsers[id]) {
         return;
     }
+    
     const targetContainer = document.querySelector(`#waitList_${id}`);
-    const targetChildren = (targetContainer && targetContainer.children) || null;
-
-    if (targetChildren) {
-        for (let i = 0; i < targetChildren.length; i++) {
-            targetContainer.removeChild(targetChildren[i]);
-        }
-        targetContainer.parentNode.removeChild(targetContainer);
+    while (targetContainer.hasChildNodes()) {
+        targetContainer.removeChild(targetContainer.firstChild);
     }
+
+    targetContainer.parentNode.removeChild(targetContainer);
+
     delete waitUsers[id];
 }
 
@@ -227,3 +232,11 @@ function createParticipantsContainer(id, userInfo, stream) {
     newVid.muted = true;
     videoSelector.value = 'mute';
 }
+
+function hideAllModal(){
+    toggleConfig(false);
+    toggleUserList(false);
+}
+
+videoSection.addEventListener('click', hideAllModal);
+maximizedVideoSection.addEventListener('click', hideAllModal);
