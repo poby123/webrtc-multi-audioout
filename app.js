@@ -10,7 +10,7 @@ const passport = require('passport');
 const session = require('express-session');
 require('ejs');
 
-const session_config = require('./server/config/session');
+const session_config = require('./server/config/session-config');
 const socketController = require('./server/controllers/socketController');
 
 // https server options

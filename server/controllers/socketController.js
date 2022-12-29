@@ -1,77 +1,70 @@
-const utility = require('../utility/utility');
-const encryptObj = utility.encryptObj;
-const decryptObj = utility.decryptObj;
+const { encryptObj, decryptObj } = require('../utility/utility');
 
-let Room = require('./room');
-peers = Room.peers;
-rooms = Room.rooms;
-creators = Room.creators;
-roomsList = Room.roomsList;
+const Room = require('./room');
+const peers = Room.peers;
+const rooms = Room.rooms;
+const creators = Room.creators;
+const roomsList = Room.roomsList;
 
 module.exports = (io) => {
   io.on('connect', (socket) => {
     socket.on('init', (userInfo, roomId) => {
-      peers[userInfo.sessionId] = socket;
+      const { sessionId, userId } = userInfo;
       socket.join(roomId);
-      socket.sessionId = userInfo.sessionId;
-      console.log('[LOG] : JOIN => ', socket.sessionId);
+      socket.sessionId = sessionId;
+      peers[sessionId] = socket;
+      console.log('[LOG] : JOIN => ', sessionId);
+
+      // Participants
+      if (creators[roomId] && creators[roomId].userId !== userId) {
+        console.log('[LOG] : JOIN ROOM => ', roomId);
+        const creatorIdArr = creators[roomId]?.sessionId || [];
+        creatorIdArr.forEach((id) => peers[id].emit('requestJoin', userInfo));
+        return;
+      }
 
       // Hosts
-      if (!creators[roomId] || creators[roomId].userId == userInfo.userId) {
-        rooms[userInfo.sessionId] = roomId;
-        const sessionId = userInfo.sessionId;
-        const userId = userInfo.userId;
-
-        if (!creators[roomId]) {
-          console.log('[LOG] : CREATE ROOM => ', roomId);
-          creators[roomId] = { sessionId: [sessionId], userId: userId };
-        } else if (creators[roomId].userId == userId) {
-          console.log('[LOG] : ADD HOST');
-          creators[roomId].sessionId.push(sessionId);
-
-          for (let id in peers) {
-            if (id === sessionId) continue;
-            if (rooms[id] != rooms[sessionId]) continue;
-            peers[id].emit('initReceive', userInfo);
-          }
-        }
-
-        const updatedStatus = encryptObj({ host: true, joined: true });
-        socket.emit('host', updatedStatus);
+      rooms[sessionId] = roomId;
+      if (!creators[roomId]) {
+        console.log('[LOG] : CREATE ROOM => ', roomId);
+        creators[roomId] = { sessionId: [sessionId], userId: userId };
       }
-      // Participants
-      else {
-        if (creators[roomId]) {
-          const creatorIds = creators[roomId].sessionId;
-          creatorIds.forEach((id) => {
-            peers[id].emit('requestJoin', userInfo);
-          });
-        }
+      else if (creators[roomId].userId === userId) {
+        console.log('[LOG] : ADD HOST');
+        creators[roomId].sessionId.push(sessionId);
+
+        /* broadcast to this room except self */
+        socket.broadcast.to(roomId).emit('initReceive', userInfo);
       }
+      const updatedStatus = encryptObj({ host: true, joined: true });
+      socket.emit('host', updatedStatus);
     });
+
 
     socket.on('requestJoin', (userInfo, result, roomId) => {
-      const sessionId = userInfo.sessionId;
-      if (result) {
-        rooms[sessionId] = roomId;
+      const { sessionId, name } = userInfo;
 
-        for (let id in peers) {
-          if (id === sessionId) continue;
-          if (rooms[id] != rooms[sessionId]) continue;
-          peers[id].emit('initReceive', userInfo);
-        }
-
-        const updatedStatus = encryptObj({ host: false, joined: true });
-        peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
-      } else {
-        userInfo && console.log('[LOG] : ', userInfo.name + 'is rejected');
+      if (!result) {
+        userInfo && console.log('[LOG] : ', name + 'is rejected');
         peers[sessionId] && peers[sessionId].emit('rejectJoin');
+        return;
       }
+
+      rooms[sessionId] = roomId;
+      for (const id in peers) {
+        if (rooms[id] != rooms[sessionId]) continue;
+        if (id === sessionId) continue;
+        peers[id].emit('initReceive', userInfo);
+      }
+      const updatedStatus = encryptObj({ host: false, joined: true });
+      peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
     });
+
 
     socket.on('initSend', (id, userInfo) => {
       peers[id] && peers[id].emit('initSend', userInfo);
     });
+
 
     socket.on('signal', (data, sessionId) => {
       if (!peers[data.sessionId]) return;
@@ -81,6 +74,7 @@ module.exports = (io) => {
       });
     });
 
+
     socket.on('restore', (userInfo, roomId) => {
       const userStatus = decryptObj(userInfo.status);
 
@@ -88,7 +82,7 @@ module.exports = (io) => {
         return;
       }
 
-      console.log('[LOG] : RESTORE...');
+      console.log('[LOG] : RESTORE... ', roomId);
       const sessionId = userInfo.sessionId;
       socket.sessionId = sessionId;
       socket.join(roomId);
@@ -100,40 +94,34 @@ module.exports = (io) => {
         console.log('[LOG] : RESTORE HOST OF : ', roomId);
         if (!creators[roomId]) {
           creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
-        } else if (creators[roomId].userId == userInfo.userId) {
+        }
+        else if (creators[roomId].userId === userInfo.userId) {
           creators[roomId].sessionId.push(sessionId);
         }
       }
     });
 
+
     socket.on('disconnect', () => {
       console.log('[LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
       const sessionId = socket.sessionId;
       const targetRoom = rooms[sessionId];
+      const targetCreators = creators[targetRoom]?.sessionId;
 
       socket.broadcast.to(targetRoom).emit('removePeer', sessionId);
-      delete peers[sessionId];
-      delete socket[sessionId];
-
-      if (creators[targetRoom] && creators[targetRoom].sessionId.includes(sessionId)) {
+      peers[sessionId] && (delete peers[sessionId]);
+      socket[sessionId] && (delete socket[sessionId]);
+      
+      if (targetCreators?.includes(sessionId)) {
         console.log('[LOG] : HOST IS DISCONNECTED');
-        let target;
-        creators[targetRoom].sessionId.forEach((element, i) => {
-          if (element == sessionId) {
-            target = i;
-          }
-        });
-        creators[targetRoom].sessionId.splice(target, 1);
+        creators[targetRoom].sessionId = targetCreators.filter((id) => id !== sessionId);
       }
 
       if (!io.sockets.adapter.rooms.get(rooms[sessionId])) {
-        delete creators[targetRoom];
-        delete roomsList[targetRoom];
+        creators[targetRoom] && (delete creators[targetRoom]);
+        roomsList[targetRoom] && (delete roomsList[targetRoom]);
       }
-
-      if (rooms[sessionId]) {
-        delete rooms[sessionId];
-      }
+      rooms[sessionId] && delete rooms[sessionId];
     });
   });
 };
