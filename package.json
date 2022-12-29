@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "pm2 start ./bin/www --watch --ignore-watch=\"./public/*\"",
-    "start": "node ./bin/www"
+    "start": "redis-server --daemonize yes; pm2 start ./bin/www --watch --ignore-watch=\"./public/*\";"
   },
   "author": "",
   "license": "ISC",
