@@ -1,6 +1,7 @@
 let passport = require('passport');
 let GoogleStrategy = require('passport-google-oauth2').Strategy;
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = require('./constants');
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL } = require('./constants');
+
 
 // Strategy 성공시 호출됨.
 passport.serializeUser(function (user, done) {
@@ -17,7 +18,7 @@ passport.use(
     {
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      callbackURL: '/auth/google/callback',
+      callbackURL: GOOGLE_CALLBACK_URL,
       passReqToCallback: true,
       proxy: true,
     },

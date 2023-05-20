@@ -3,7 +3,7 @@ const waitUserContainer = peerListSection.querySelector('.wait-container');
 const peerListContainer = peerListSection.querySelector('.peer-container');
 
 const maximizedVideoSection = document.querySelector('.section-maximized-video');
-const videoSection = document.querySelector('.section-videos');
+const videosConainerGroup = document.querySelector('.video-container-group');
 
 let currentMaximizedId = undefined;
 let showConfigModal = false;
@@ -29,7 +29,7 @@ function handleMaximize(e) {
     const selectedContainer = document.getElementById(`container_${id}`);
     maximizedVideoSection.appendChild(selectedContainer);
     maximizedVideoSection.setAttribute('style', 'display: flex');
-    videoSection.setAttribute('style', 'display: none');
+    videosConainerGroup.setAttribute('style', 'display: none');
 }
 
 function handleMinimize() {
@@ -42,7 +42,7 @@ function handleMinimize() {
     currentMaximizedId = null;
     
     const selectedContainer = document.getElementById(`container_${id}`);
-    videoSection.appendChild(selectedContainer);
+    videosConainerGroup.appendChild(selectedContainer);
 
     while(maximizedVideoSection.hasChildNodes()){
         maximizedVideoSection.removeChild(maximizedVideoSection.firstChild);
@@ -55,7 +55,7 @@ function handleMinimize() {
 
     button.replaceChildren(maximzeIcon);
 
-    videoSection.setAttribute('style', 'display: flex');
+    videosConainerGroup.setAttribute('style', 'display: flex');
     maximizedVideoSection.setAttribute('style', 'display: none');
 }
 
@@ -217,8 +217,7 @@ function createParticipantsContainer(id, userInfo, stream) {
     let meter = createSoundMeter(id, stream);
     
     /* append children */
-    let videoSection = document.querySelector('.section-videos');
-    videoSection.appendChild(videoContainer);
+    videosConainerGroup.appendChild(videoContainer);
     videoContainer.appendChild(meter);
     videoContainer.appendChild(newVid);
     videoContainer.appendChild(nameTag);
@@ -230,5 +229,5 @@ function hideAllModal(){
     toggleUserList(false);
 }
 
-videoSection.addEventListener('click', hideAllModal);
+videosConainerGroup.addEventListener('click', hideAllModal);
 maximizedVideoSection.addEventListener('click', hideAllModal);

@@ -1,10 +1,11 @@
 :root{
-  --main-font-color: rgb(159, 244, 255)
+  --main-font-color: rgb(159, 244, 255);
+  --main-background-color: #2B3A55;
 }
 
 body {
   margin: 0;
-  background-color: #2B3A55;
+  background-color: var(--main-background-color);
 }
 meter {
   width: 100%;
@@ -31,7 +32,7 @@ button{
   right: 0;
   top: 0;
   width: 20vw;
-  height: 90vh;
+  min-height: 90vh;
   z-index: 100;
   background-color: white;
 
@@ -47,7 +48,6 @@ button{
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  /* border: 1px solid blue; */
   width: 100%;
 }
 .section-peer-list .wait-container {
@@ -55,7 +55,6 @@ button{
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  /* border: 1px solid green; */
   width: 100%;
 }
 .section-peer-list .a-user-container {
@@ -92,45 +91,49 @@ button{
 
 /* maximized video secion */
 .section-maximized-video{
-  max-width: 100%;
-  min-height: 90vh;
-  max-height: 90vh;
+  width: 100%;
+  max-height: 80vh;
+  padding: 0;
+  margin: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  display: none;
+  justify-content: center;
 }
 
 .section-maximized-video video {
   width: 100%;
-  height: 75vh;
+  height: 80vh;
   object-fit: contain;
   padding: 0; 
   margin: 0;
 }
 
 /* videos section */
-.section-videos {
+.video-section {
   max-width: 100%;
   min-height: 90vh;
   max-height: 90vh;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
+}
+
+.video-container-group {
+  display: grid;
+  height: fit-content;
+  padding-bottom: 15vh;
+  grid-template-columns: repeat(auto-fit, minmax(25%, auto));
 }
 
 .video-container {
-  /* flex: 1; */
-  max-width: fit-content;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 2px solid white;
+  border: 0.2px solid var(--main-font-color);
+  box-sizing: border-box;
   padding: 0;
   margin: 0;
+  display: block;
   position: relative;
+  min-height: 30vh;
 }
 
 .video-container .user-name {
@@ -160,20 +163,10 @@ button{
   background: none;
 }
 
-.video-container select{
-  width: 100%;
-  height: 2rem;
-  outline: none;
-}
-
-.video-container button{
-  width: 100%;
-}
-
 /* whole video */
-.section-videos video {
+.video-container-group video {
   width: 100%;
-  height: 400px;
+  height: auto;
   object-fit: contain;
   padding: 0; 
   margin: 0;
@@ -189,7 +182,7 @@ button{
   bottom: 0;
   width: 100%;
   
-  /* background-color: white; */
+  background-color: var(--main-background-color);
   margin: 0;
 
   display: flex;

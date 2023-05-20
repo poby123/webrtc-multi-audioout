@@ -6,4 +6,5 @@ module.exports = {
     SESSION_KEY: process.env.SESSION_KEY || 'secret',
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || 'test google id',
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || 'test google client secret',
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
 }
