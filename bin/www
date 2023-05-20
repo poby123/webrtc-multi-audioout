@@ -3,17 +3,6 @@
 let app = require('../app').app;
 let server = require('../app').server;
 let debug = require('debug')('web-translate:server');
-let http = require('http');
-
- 
-/**
- * Create HTTP server to redirect to HTTPS
- */
-// http.createServer((req, res) => {
-//   console.log('http connect');
-//   res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-//   res.end();
-// }).listen(3000);
 
 const port = normalizePort(process.env.PORT || '3000');
 console.log("The Port number is : ", port);

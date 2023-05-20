@@ -29,12 +29,10 @@ addPeerList('myInfo', myInfo);
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
-const audioInputSelect = document.querySelector('select#audioSource');
+const audioInputSelect = document.querySelector('select#audioInputSource');
+const audioOutputSelect = document.querySelector('select#audioOutputSource');
 const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, videoSelect];
-
-// redirect if not https
-if (location.href.substr(0, 5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4);
+const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
 
 function init() {
@@ -158,7 +156,6 @@ function removePeer(sessionId) {
   }
 
   let videoEl = document.getElementById(sessionId);
-  let videoSelector = document.getElementById(`selector_${sessionId}`);
   let videoContainer = document.getElementById(`container_${sessionId}`);
   let meter = document.getElementById(`meter_${sessionId}`);
 
@@ -171,7 +168,6 @@ function removePeer(sessionId) {
 
     videoEl.srcObject = null;
     videoContainer.removeChild(videoEl);
-    videoContainer.removeChild(videoSelector);
     videoContainer.removeChild(meter);
     videoContainer.parentNode.removeChild(videoContainer);
   }
@@ -187,13 +183,12 @@ function removePeer(sessionId) {
   deleteWaitList(sessionId);
 }
 
-/*****************************/
+
 function switchMedia() {
   const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
   constraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
   constraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
-  localStorage.setItem('webrtc_constraints', JSON.stringify(constraints));
   
   const tracks = localStream.getTracks();
   const videoState = localStream.getVideoTracks()[0].enabled;
@@ -229,7 +224,7 @@ function switchMedia() {
   });
 }
 
-/*****************************/
+
 function removeLocalStream() {
   if (localStream) {
     const tracks = localStream.getTracks();
@@ -247,7 +242,6 @@ function removeLocalStream() {
 }
 
 
-/*****************************/
 function handleApprove(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
@@ -255,7 +249,7 @@ function handleApprove(e) {
   deleteWaitList(id);
 }
 
-/*****************************/
+
 function handleReject(e) {
   const id = e.currentTarget.id;
   const targetInfo = waitUsers[id];
@@ -293,6 +287,10 @@ async function getDevices() {
       option.text = label || `camera ${videoSelect.length + 1}`;
       videoSelect.appendChild(option);
     }
+    else if(kind === 'audiooutput'){
+      option.text = label || `speaker ${audioOutputSelect.length + 1}`
+      audioOutputSelect.appendChild(option)
+    }
   }
 
   selectors.forEach((select, i) => {
@@ -314,6 +312,7 @@ async function start() {
   try{
     await getDevices();
     await getStream();
+    toggleMute();
   }
   catch(e){
     console.log(e);
@@ -324,5 +323,6 @@ async function start() {
 }
 
 audioInputSelect.onchange = switchMedia;
+audioOutputSelect.onchange = handleSoundChange;
 videoSelect.onchange = switchMedia;
 start();

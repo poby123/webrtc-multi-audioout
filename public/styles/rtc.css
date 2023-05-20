@@ -1,15 +1,28 @@
+:root{
+  --main-font-color: rgb(159, 244, 255)
+}
+
 body {
   margin: 0;
   background-color: #2B3A55;
 }
 meter {
   width: 100%;
+  border-radius: 7px;
+  margin: 0;
+  padding: 0;
+  
 }
 button:hover {
   cursor: pointer;
 }
 select:hover{
   cursor: pointer;
+}
+button{
+  border: none;
+  background: none;
+  background: white;
 }
 
 /* section-peer-list */
@@ -109,7 +122,7 @@ select:hover{
 }
 
 .video-container {
-  flex: 1;
+  /* flex: 1; */
   max-width: fit-content;
   display: flex;
   flex-direction: column;
@@ -117,12 +130,34 @@ select:hover{
   border: 2px solid white;
   padding: 0;
   margin: 0;
+  position: relative;
 }
 
 .video-container .user-name {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
   font-weight: bold;
   text-align: center;
-  color: white;
+  color: var(--main-font-color)
+}
+
+.video-container .maximize-buttons {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  background: none;
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container .maximize-icons {
+  width: 1rem;
+  height: 1rem;
+  background: none;
 }
 
 .video-container select{
@@ -150,34 +185,34 @@ select:hover{
 */
 .local-config {
   position: fixed;
+  min-height: 10vh;
   bottom: 0;
   width: 100%;
-  /* background-color: #1d608d; */
-  background-color: white;
+  
+  /* background-color: white; */
+  margin: 0;
+
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0;
 }
 
 .local-config-container {
-  min-height: 10vh;
+  height: 100%;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 20%;
+  
+  width: 60%;
   margin-left: auto;
   margin-right: auto;
 }
 
 .local-config-container button {
   display: inline-block;
-  background: none;
-  border: none;
   height: 100%;
   outline: none;
-  /* border: 2px solid red; */
-  background-color: rgb(219, 98, 144);
+  background-color: rgb(37, 137, 146);
   border-radius: 50%;
   padding: 1em 1.1em;
   margin-left: auto;
@@ -201,6 +236,8 @@ select:hover{
   margin: auto;
   background-color: white;
   border-radius: 20px;
+
+  transition: all ease 2s 0s;
 }
 .local-config-modal .container {
   display: flex;

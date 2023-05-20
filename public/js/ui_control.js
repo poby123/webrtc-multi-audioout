@@ -11,14 +11,20 @@ let showUserList = false;
 
 function handleMaximize(e) {
     const id = e.currentTarget.id.replace('maximizeButton_', '');
-    
+    const button = document.getElementById(`maximizeButton_${id}`);
+
     // toggle maximized section
     if(currentMaximizedId === id){
         handleMinimize(e);
         return;
     }
     
-    e.currentTarget.innerText = 'Minimize';
+    const minimizeIcon = document.createElement('img')
+    minimizeIcon.src = '/fonts/minimize-solid.svg'
+    minimizeIcon.className = 'maximize-icons'
+
+    button.replaceChildren(minimizeIcon);
+
     currentMaximizedId = id;
     const selectedContainer = document.getElementById(`container_${id}`);
     maximizedVideoSection.appendChild(selectedContainer);
@@ -43,7 +49,12 @@ function handleMinimize() {
     }
 
     const button = document.getElementById(`maximizeButton_${id}`);
-    button.innerText = 'Maximize';
+    const maximzeIcon = document.createElement('img')
+    maximzeIcon.src = '/fonts/maximize-solid.svg'
+    maximzeIcon.className = 'maximize-icons'
+
+    button.replaceChildren(maximzeIcon);
+
     videoSection.setAttribute('style', 'display: flex');
     maximizedVideoSection.setAttribute('style', 'display: none');
 }
@@ -190,47 +201,28 @@ function createParticipantsContainer(id, userInfo, stream) {
     videoContainer.className = 'video-container';
     videoContainer.id = `container_${id}`;
 
-    /* create selector */
-    let videoSelector = document.createElement('select');
-    videoSelector.id = `selector_${id}`;
+    /* create maximize icon */
+    let maximizeButton = document.createElement('button');
+    const maximzeIcon = document.createElement('img')
+    maximzeIcon.src = '/fonts/maximize-solid.svg'
+    maximzeIcon.className = 'maximize-icons'
 
     /* create maximize button */
-    let maximizeButton = document.createElement('button');
-    maximizeButton.innerHTML = 'Maximize';
     maximizeButton.id = `maximizeButton_${id}`;
+    maximizeButton.className = 'maximize-buttons'
+    maximizeButton.appendChild(maximzeIcon);
     maximizeButton.addEventListener('click', handleMaximize);
-
+    
     /* create meter */
     let meter = createSoundMeter(id, stream);
-
+    
     /* append children */
     let videoSection = document.querySelector('.section-videos');
     videoSection.appendChild(videoContainer);
-    videoContainer.appendChild(nameTag);
     videoContainer.appendChild(meter);
     videoContainer.appendChild(newVid);
-    videoContainer.appendChild(videoSelector);
+    videoContainer.appendChild(nameTag);
     videoContainer.appendChild(maximizeButton);
-
-    current_deviceInfos.forEach(({kind, label, deviceId}) => {
-        if (kind === 'audiooutput') {
-            const option = document.createElement('option');
-            option.value = deviceId;
-            option.text = label || `speaker ${parent.length + 1}`;
-            videoSelector.appendChild(option);
-        }
-    });
-
-    /* add mute option to selector */
-    const mute_option = document.createElement('option');
-    mute_option.value = 'mute';
-    mute_option.text = '소리 끄기';
-    videoSelector.appendChild(mute_option);
-    videoSelector.addEventListener('change', handleSoundChange);
-
-    //set default, others video sound set muted.
-    newVid.muted = true;
-    videoSelector.value = 'mute';
 }
 
 function hideAllModal(){

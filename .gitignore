@@ -3,3 +3,4 @@ public/videos
 test.*
 .env
 *.rdb
+public/.DS_Store

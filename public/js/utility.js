@@ -53,19 +53,15 @@ function updateLocalSoundMeter(stream) {
     }
 }
 
-function handleSoundChange(e) {
+function handleSoundChange() {
     console.log('handle sound change');
-    let selector = document.getElementById(e.target.id);
-    let target_id = e.target.id.replace('selector_', '');
-    console.log(target_id);
-    let target = document.getElementById(target_id);
+    const source = audioOutputSelect.value;
 
-    if (selector.value === 'mute') {
-        target.muted = true;
-    } else {
-        target.muted = false;
-        target.setSinkId(selector.value);
-    }
+    const videos = document.querySelectorAll('video');
+    videos.forEach(v => v.setSinkId(source));
+
+    const localVideoElement = document.getElementById('localVideo')
+    localVideoElement.muted = true;
 }
 
 function exit() {

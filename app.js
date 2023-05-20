@@ -13,16 +13,9 @@ require('ejs');
 const session_config = require('./server/config/session-config');
 const socketController = require('./server/controllers/socketController');
 
-// https server options
-const options = {
-  key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem'), 'utf-8'),
-  cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'), 'utf-8'),
-}; 
-
 // app, server
 const app = express();
-// let server = http.createServer(app);
-const server = https.createServer(options, app);
+const server = http.createServer(app);
 const io = require('socket.io')(server);
 
 socketController(io);
