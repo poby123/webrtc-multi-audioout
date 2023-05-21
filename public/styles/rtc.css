@@ -145,27 +145,30 @@ button{
   color: var(--main-font-color)
 }
 
-.video-container .maximize-buttons {
+.video-container .buttons-container {
   position: absolute;
   right: 5px;
   bottom: 5px;
   background: none;
-  width: fit-content;
+  width: auto;
 
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.video-container .maximize-icons {
+.video-container .video-icons {
+  padding-left: 0.5rem;
   width: 1rem;
   height: 1rem;
   background: none;
+  cursor: pointer;
 }
 
 /* whole video */
 .video-container-group video {
   width: 100%;
+  background-color: black;
   height: auto;
   object-fit: contain;
   padding: 0; 

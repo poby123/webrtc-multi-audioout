@@ -10,20 +10,16 @@ let showConfigModal = false;
 let showUserList = false;
 
 function handleMaximize(e) {
+    const targetElement = e.currentTarget;
     const id = e.currentTarget.id.replace('maximizeButton_', '');
-    const button = document.getElementById(`maximizeButton_${id}`);
 
     // toggle maximized section
     if(currentMaximizedId === id){
         handleMinimize(e);
         return;
     }
-    
-    const minimizeIcon = document.createElement('img')
-    minimizeIcon.src = '/fonts/minimize-solid.svg'
-    minimizeIcon.className = 'maximize-icons'
 
-    button.replaceChildren(minimizeIcon);
+    targetElement.src = '/fonts/minimize-solid.svg' 
 
     currentMaximizedId = id;
     const selectedContainer = document.getElementById(`container_${id}`);
@@ -32,7 +28,12 @@ function handleMaximize(e) {
     videosConainerGroup.setAttribute('style', 'display: none');
 }
 
-function handleMinimize() {
+/**
+ * It is invoked by handleMaximize function
+ * @param {*} e 
+ * @returns 
+ */
+function handleMinimize(e) {
     if(!currentMaximizedId){
         alert('[ERROR]: cannot minimize due current maximized value is not defined.');
         return;
@@ -48,15 +49,43 @@ function handleMinimize() {
         maximizedVideoSection.removeChild(maximizedVideoSection.firstChild);
     }
 
-    const button = document.getElementById(`maximizeButton_${id}`);
-    const maximzeIcon = document.createElement('img')
-    maximzeIcon.src = '/fonts/maximize-solid.svg'
-    maximzeIcon.className = 'maximize-icons'
-
-    button.replaceChildren(maximzeIcon);
+    const targetElement = e.currentTarget;
+    targetElement.src = '/fonts/maximize-solid.svg'; 
 
     videosConainerGroup.setAttribute('style', 'display: flex');
     maximizedVideoSection.setAttribute('style', 'display: none');
+}
+
+function toggleAudioOutput(e) {
+    const targetElement = e.currentTarget;
+    const id = targetElement.id.replace('speakerButton_', '');
+
+    const targetVideo = document.getElementById(`${id}`);
+    const currentMuteStatus = targetVideo.muted;
+
+    // change status
+    targetVideo.muted = !currentMuteStatus;
+    if(targetVideo.muted){
+        targetElement.src = '/fonts/volume-xmark.svg';
+    }
+    else{
+        targetElement.src = '/fonts/volume-high.svg';
+    }
+}
+
+function toggleVideoOutput(e){
+    const targetElement = e.currentTarget;
+    const id = targetElement.id.replace('videoOutputToggleButton_', '');
+    const targetVideo = document.getElementById(`${id}`);
+    
+    // change status
+    targetVideo.srcObject = targetVideo.srcObject ? undefined : streams[id];
+    if(!targetVideo.srcObject){
+        targetElement.src = '/fonts/mint-video-slash.svg';
+    }
+    else{
+        targetElement.src = '/fonts/mint-video.svg';
+    }
 }
 
 function toggleConfig(show) {
@@ -201,27 +230,43 @@ function createParticipantsContainer(id, userInfo, stream) {
     videoContainer.className = 'video-container';
     videoContainer.id = `container_${id}`;
 
-    /* create maximize icon */
-    let maximizeButton = document.createElement('button');
-    const maximzeIcon = document.createElement('img')
-    maximzeIcon.src = '/fonts/maximize-solid.svg'
-    maximzeIcon.className = 'maximize-icons'
-
-    /* create maximize button */
-    maximizeButton.id = `maximizeButton_${id}`;
-    maximizeButton.className = 'maximize-buttons'
-    maximizeButton.appendChild(maximzeIcon);
-    maximizeButton.addEventListener('click', handleMaximize);
+    /* create buttons container */
+    let buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'buttons-container'
     
-    /* create meter */
+    // create speaker icon 
+    const speakerIcon = document.createElement('img');
+    speakerIcon.src = '/fonts/volume-high.svg';
+    speakerIcon.className = 'video-icons';
+    speakerIcon.id = `speakerButton_${id}`;
+    speakerIcon.addEventListener('click', toggleAudioOutput)
+    buttonsContainer.appendChild(speakerIcon);
+
+    // create video icon
+    const videoOutputToggleIcon = document.createElement('img');
+    videoOutputToggleIcon.src = '/fonts/mint-video.svg';
+    videoOutputToggleIcon.className = 'video-icons';
+    videoOutputToggleIcon.id = `videoOutputToggleButton_${id}`;
+    videoOutputToggleIcon.addEventListener('click', toggleVideoOutput)
+    buttonsContainer.appendChild(videoOutputToggleIcon);
+
+    // create maximize icon
+    const maximzeIcon = document.createElement('img');
+    maximzeIcon.src = '/fonts/maximize-solid.svg';
+    maximzeIcon.className = 'video-icons';
+    maximzeIcon.id = `maximizeButton_${id}`;
+    maximzeIcon.addEventListener('click', handleMaximize);
+    buttonsContainer.appendChild(maximzeIcon);
+
+    // create meter
     let meter = createSoundMeter(id, stream);
     
-    /* append children */
+    // append children
     videosConainerGroup.appendChild(videoContainer);
     videoContainer.appendChild(meter);
     videoContainer.appendChild(newVid);
     videoContainer.appendChild(nameTag);
-    videoContainer.appendChild(maximizeButton);
+    videoContainer.appendChild(buttonsContainer);
 }
 
 function hideAllModal(){

@@ -1,9 +1,9 @@
 const { encryptObj, decryptObj } = require('../utility/utility');
 
 const Room = require('./room');
-const peers = Room.peers;
-const rooms = Room.rooms;
-const creators = Room.creators;
+const peers = Room.peers;       // peers: {[sessionId]: socket}
+const rooms = Room.rooms;       // rooms: {[sessionId]: roomId}
+const creators = Room.creators; // creator: {[roomId]: {sessionId: [], userId: ''}}
 const roomsList = Room.roomsList;
 
 module.exports = (io) => {
@@ -34,7 +34,11 @@ module.exports = (io) => {
         creators[roomId].sessionId.push(sessionId);
 
         /* broadcast to this room except self */
-        socket.broadcast.to(roomId).emit('initReceive', userInfo);
+        for (const id in peers) {
+          if (rooms[id] != rooms[sessionId]) continue;
+          if (id === sessionId) continue;
+          peers[id].emit('initReceive', userInfo);
+        }
       }
       const updatedStatus = encryptObj({ host: true, joined: true });
       socket.emit('host', updatedStatus);

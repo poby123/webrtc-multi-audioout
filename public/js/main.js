@@ -310,6 +310,7 @@ async function getStream() {
 
 async function start() {
   try{
+    console.log('start!');
     await getDevices();
     await getStream();
     toggleMute();
@@ -322,7 +323,9 @@ async function start() {
   }
 }
 
-audioInputSelect.onchange = switchMedia;
-audioOutputSelect.onchange = handleSoundChange;
-videoSelect.onchange = switchMedia;
-start();
+window.onload = function() {
+  audioInputSelect.onchange = switchMedia;
+  videoSelect.onchange = switchMedia;
+  audioOutputSelect.onchange = handleSoundChange;
+  start();
+}
