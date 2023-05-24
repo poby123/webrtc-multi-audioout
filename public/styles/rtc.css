@@ -1,42 +1,56 @@
-:root{
+:root {
   --main-font-color: rgb(159, 244, 255);
-  --main-background-color: #2B3A55;
+  --main-background-color: #2b3a55;
 }
 
 body {
   margin: 0;
   background-color: var(--main-background-color);
+  font-size: 16px;
 }
 meter {
   width: 100%;
   border-radius: 7px;
   margin: 0;
   padding: 0;
-  
 }
 button:hover {
   cursor: pointer;
 }
-select:hover{
+select:hover {
   cursor: pointer;
 }
-button{
+button {
   border: none;
   background: none;
   background: white;
 }
 
+.horizonal-flex {
+  display: flex;
+}
+
+.card {
+  background-color: #3c5076;
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 0.5rem;
+}
+
+.flex-2 {
+  flex: 2;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
 /* section-peer-list */
 .section-peer-list {
-  position: fixed;
-  right: 0;
-  top: 0;
   width: 20vw;
   min-height: 90vh;
-  z-index: 100;
-  background-color: white;
 
-  display: none;
+  display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
@@ -60,11 +74,24 @@ button{
 .section-peer-list .a-user-container {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid black;
-  padding: 0.3em 0;
+  border-bottom: 1px solid white;
+  padding: 0.5rem 0;
 }
+.section-peer-list .a-user-profile-group {
+  display: flex;
+  flex: 2;
+  align-items: center;
+}
+
+.section-peer-list .a-user-button-group {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .section-peer-list .profile-img {
   width: 40px;
   height: 40px;
@@ -73,15 +100,23 @@ button{
   margin-right: 0.5em;
 }
 .section-peer-list .profile-name {
+  margin-left: 0.5rem;
   font-family: 'Nanum Gothic';
+  color: white;
 }
 .section-peer-list button {
   color: white;
   border: none;
   border-radius: 5px;
-  line-height: 2em;
-  width: 20%;
+  padding: 0.8rem 1.1rem;
+  margin-left: 0.2rem;
+  justify-content: flex-end;
+  cursor: pointer;
 }
+.section-peer-list button:hover {
+  opacity: 0.8;
+}
+
 .section-peer-list .approve-button {
   background-color: green;
 }
@@ -90,7 +125,7 @@ button{
 }
 
 /* maximized video secion */
-.section-maximized-video{
+.section-maximized-video {
   width: 100%;
   max-height: 80vh;
   padding: 0;
@@ -104,8 +139,12 @@ button{
   width: 100%;
   height: 80vh;
   object-fit: contain;
-  padding: 0; 
+  padding: 0;
   margin: 0;
+}
+
+.section-maximized-video .hidden-video {
+  visibility: hidden;
 }
 
 /* videos section */
@@ -117,6 +156,8 @@ button{
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .video-container-group {
@@ -142,7 +183,7 @@ button{
   bottom: 5px;
   font-weight: bold;
   text-align: center;
-  color: var(--main-font-color)
+  color: var(--main-font-color);
 }
 
 .video-container .buttons-container {
@@ -158,9 +199,9 @@ button{
 }
 
 .video-container .video-icons {
-  padding-left: 0.5rem;
-  width: 1rem;
-  height: 1rem;
+  padding-left: 0.8rem;
+  width: 1.1rem;
+  height: 1.1rem;
   background: none;
   cursor: pointer;
 }
@@ -171,10 +212,13 @@ button{
   background-color: black;
   height: auto;
   object-fit: contain;
-  padding: 0; 
+  padding: 0;
   margin: 0;
 }
 
+.video-container-group .hidden-video {
+  visibility: hidden;
+}
 
 /* 
 * local video config menu 
@@ -184,7 +228,7 @@ button{
   min-height: 10vh;
   bottom: 0;
   width: 100%;
-  
+
   background-color: var(--main-background-color);
   margin: 0;
 
@@ -198,7 +242,7 @@ button{
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   width: 60%;
   margin-left: auto;
   margin-right: auto;
@@ -225,6 +269,7 @@ button{
   display: none;
   width: 500px;
   height: 400px;
+  opacity: 0;
   top: 0;
   bottom: 0;
   left: 0;
@@ -232,8 +277,6 @@ button{
   margin: auto;
   background-color: white;
   border-radius: 20px;
-
-  transition: all ease 2s 0s;
 }
 .local-config-modal .container {
   display: flex;

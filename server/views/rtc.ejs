@@ -1,99 +1,101 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <title>Translate</title>
-    <link rel="stylesheet" href="/styles/rtc.css">
-</head>
+    <link rel="stylesheet" href="/styles/rtc.css" />
+  </head>
 
-<body>
-    <section class="section-peer-list">
+  <body>
+    <section class="section-maximized-video"></section>
+
+    <div class="horizonal-flex">
+      <section class="section-videos card flex-2">
+        <div class="video-container-group">
+          <div class="video-container">
+            <span id="local-user-name" class="user-name"></span>
+            <meter id="local-sound-meter"></meter>
+            <video id="localVideo" autoplay muted></video>
+          </div>
+        </div>
+      </section>
+      <section class="section-peer-list card flex-1">
         <div class="wait-container">
-            <!-- <div class="a-user-container">
-                <button id="" class="approve-button">수락</button>
-                <button id="" class="reject-button">거절</button>
-                <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
-                <span class="profile-name">이름</span>
-            </div> -->
+          <!-- <div class="a-user-container">
+                    <button id="" class="approve-button">수락</button>
+                    <button id="" class="reject-button">거절</button>
+                    <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
+                    <span class="profile-name">이름</span>
+                </div> -->
         </div>
         <div class="peer-container">
-            <!-- <div class="a-user-container">
-                <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
-                <span class="profile-name">이름</span>
-            </div> -->
+          <!-- <div class="a-user-container">
+                    <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
+                    <span class="profile-name">이름</span>
+                </div> -->
         </div>
-    </section>
-    <section class="section-maximized-video">
-    </section>
-    
-    <section class="section-videos">
-        <div class="video-container-group">
-            <div class="video-container">
-                <span id="local-user-name" class="user-name"></span>
-                <meter id="local-sound-meter"></meter>
-                <video id="localVideo" autoplay muted></video>
-            </div>
-        </div>
-    </section>
+      </section>
+    </div>
+
     <section class="local-config">
-        <div class="local-config-container">
-            <button class="config-icon" id="exitButton" title="exit" onclick="exit()">
-                <img id="exitButtonImage" src="/fonts/times.svg" />
-            </button>
-            <button class="config-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
-                <img id="muteButtonImage" src="/fonts/microphone.svg">
-            </button>
-            <button class="config-icon" id="vidButton" title="toggle video" onclick="toggleVideo()">
-                <img id="videoButtonImage" src="/fonts/video.svg">
-            </button>
-            <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
-                <img id="configButtonImage" src="/fonts/cog.svg">
-            </button>
-            <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()"><img id="userButtonImage"
-                    src="/fonts/user.svg">
-            </button>
-        </div>
-    </section>
-    
-    <section class="local-config-modal">
-        <div class="container">
-            <div class="select">
-                <span>비디오 설정 : </span>
-                <br>
-                <select id="videoSource"></select>
-            </div>
-            <div class="select">
-                <span>마이크 : </span>
-                <br>
-                <select id="audioInputSource"></select>
-            </div>
-            <div class="select">
-                <span>스피커 : </span>
-                <br>
-                <select id="audioOutputSource"></select>
-            </div>
-        </div>
-    </section>
-    <section class="info">
-        <input type="hidden" id="info-user-name" value="<%=username%>" />
-        <input type="hidden" id="info-user-id" value="<%=userid%>" />
-        <input type="hidden" id="info-user-profile" value="<%=profile%>" />
-        <input type="hidden" id="info-user-session" value="<%=sessionId%>" />
-        <input type="hidden" id="info-status" value="<%=status%>" />
+      <div class="local-config-container">
+        <button class="config-icon" id="exitButton" title="exit" onclick="exit()">
+          <img id="exitButtonImage" src="/fonts/times.svg" />
+        </button>
+        <button class="config-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
+          <img id="muteButtonImage" src="/fonts/microphone.svg" />
+        </button>
+        <button class="config-icon" id="vidButton" title="toggle video" onclick="toggleVideo()">
+          <img id="videoButtonImage" src="/fonts/video.svg" />
+        </button>
+        <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
+          <img id="configButtonImage" src="/fonts/cog.svg" />
+        </button>
+        <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()">
+          <img id="userButtonImage" src="/fonts/user.svg" />
+        </button>
+      </div>
     </section>
 
+    <section class="local-config-modal">
+      <div class="container">
+        <div class="select">
+          <span>비디오 설정 : </span>
+          <br />
+          <select id="videoSource"></select>
+        </div>
+        <div class="select">
+          <span>마이크 : </span>
+          <br />
+          <select id="audioInputSource"></select>
+        </div>
+        <div class="select">
+          <span>스피커 : </span>
+          <br />
+          <select id="audioOutputSource"></select>
+        </div>
+      </div>
+    </section>
+    <section class="info">
+      <input type="hidden" id="info-user-name" value="<%=username%>" />
+      <input type="hidden" id="info-user-id" value="<%=userid%>" />
+      <input type="hidden" id="info-user-profile" value="<%=profile%>" />
+      <input type="hidden" id="info-user-session" value="<%=sessionId%>" />
+      <input type="hidden" id="info-status" value="<%=status%>" />
+    </section>
     <script lang="text/javascript" src="/socket.io/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"
-        integrity="sha512-0j8yvyjRIWuD9DD6gIKgQArBwURjNZoud+kvmcJC4zmxusqjnrHS7jwUZIBASfoZ00H5TAJJM5RH7RbxOU0iig=="
-        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.9.3/simplepeer.min.js"
+      integrity="sha512-0j8yvyjRIWuD9DD6gIKgQArBwURjNZoud+kvmcJC4zmxusqjnrHS7jwUZIBASfoZ00H5TAJJM5RH7RbxOU0iig=="
+      crossorigin="anonymous"
+    ></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="/js/soundmeter.js"></script>
     <script src="/js/variables.js"></script>
     <script src="/js/constraints.js"></script>
-    <script src='/js/utility.js'></script>
-    <script src='/js/ui_control.js'></script>
-    <script src='/js/main.js' async></script>
-</body>
-
+    <script src="/js/utility.js"></script>
+    <script src="/js/ui_control.js"></script>
+    <script src="/js/main.js" async></script>
+  </body>
 </html>
