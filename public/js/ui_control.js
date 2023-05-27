@@ -1,6 +1,7 @@
 const peerListSection = document.querySelector('.section-peer-list');
 const waitUserContainer = peerListSection.querySelector('.wait-container');
 const peerListContainer = peerListSection.querySelector('.peer-container');
+const statusElement = document.getElementById('status-text');
 
 const maximizedVideoSection = document.querySelector('.section-maximized-video');
 const videosConainerGroup = document.querySelector('.video-container-group');
@@ -8,6 +9,8 @@ const videosConainerGroup = document.querySelector('.video-container-group');
 let currentMaximizedId = undefined;
 let showConfigModal = false;
 let showUserList = false;
+
+statusElement.innerText = 'HIHI';
 
 function handleMaximize(e) {
   const targetElement = e.currentTarget;

@@ -20,6 +20,14 @@
         </div>
       </section>
       <section class="section-peer-list card flex-1">
+        <div class="close-button-container">
+          <img class="close-icon" src="/fonts/xmark.svg" alt="" onclick="toggleUserList()" />
+        </div>
+        <div class="status-container">
+          <div class="a-user-container">
+            <span id="status-text"></span>
+          </div>
+        </div>
         <div class="wait-container">
           <!-- <div class="a-user-container">
                     <button id="" class="approve-button">수락</button>
@@ -60,6 +68,9 @@
     <section class="local-config-modal">
       <div class="container">
         <div class="select">
+          <div class="close-button-container">
+            <img class="close-icon" src="/fonts/xmark.svg" alt="" onclick="toggleConfig()" />
+          </div>
           <span>비디오 설정 : </span>
           <br />
           <select id="videoSource"></select>

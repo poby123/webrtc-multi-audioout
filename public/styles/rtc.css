@@ -45,6 +45,18 @@ button {
   flex: 1;
 }
 
+.close-button-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.close-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+}
+
 /* section-peer-list */
 .section-peer-list {
   width: 20vw;
@@ -56,6 +68,14 @@ button {
   align-items: center;
   overflow-y: scroll;
   overflow-x: hidden;
+}
+.section-peer-list .status-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  color: white;
 }
 .section-peer-list .peer-container {
   display: flex;
