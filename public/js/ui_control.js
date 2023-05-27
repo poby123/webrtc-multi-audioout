@@ -10,7 +10,9 @@ let currentMaximizedId = undefined;
 let showConfigModal = false;
 let showUserList = false;
 
-statusElement.innerText = 'HIHI';
+function setStatusText(msg) {
+  statusElement.innerText = msg;
+}
 
 function handleMaximize(e) {
   const targetElement = e.currentTarget;

@@ -42,15 +42,17 @@ function init() {
   document.title = `Translate | ${roomId}`;
 
   socket.emit('init', myInfo, roomId);
+  setStatusText('회의 참여 요청을 보냈습니다. 호스트가 수락하면 참여하게 됩니다.');
 
   socket.on('host', (updatedStatus) => {
     myInfo.status = updatedStatus;
+    setStatusText('회의를 시작했습니다.');
   });
 
   socket.on('requestJoin', (userInfo) => {
     window.focus();
     console.log('request Join');
-    alert('새로운 유저가 입장을 요청했습니다.');
+    setStatusText(`새로운 유저가 입장을 요청했습니다`);
     const otherId = userInfo.sessionId;
     waitUsers[otherId] = userInfo;
     addWaitList(otherId);
@@ -59,6 +61,7 @@ function init() {
 
   /*****************************/
   socket.on('approvedJoin', (updatedStatus) => {
+    setStatusText('회의에 참여했습니다.');
     myInfo.status = updatedStatus;
   });
 
@@ -72,6 +75,7 @@ function init() {
   /*****************************/
   socket.on('initReceive', (otherInfo) => {
     console.log('INIT RECEIVE ' + otherInfo.name);
+    setStatusText('새로운 사용자가 입장했습니다.');
     addPeer(false, otherInfo);
     socket.emit('initSend', otherInfo.sessionId, myInfo);
   });
@@ -91,8 +95,16 @@ function init() {
   });
 
   /*****************************/
+  socket.on('allHostDisconnected', () => {
+    setStatusText(
+      `모든 방장과의 연결이 끊겼습니다. \n방장이 다시 들어올 때까지 기다리거나 새로 방을 만들 수 있습니다.`,
+    );
+  });
+
+  /*****************************/
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
+    setStatusText('서버와의 연결이 끊겼습니다.');
 
     for (const [key] of Object.entries(waitUsers)) {
       deleteWaitList(key);

@@ -1,8 +1,8 @@
 const { encryptObj, decryptObj } = require('../utility/utility');
 
 const Room = require('./room');
-const peers = Room.peers;       // peers: {[sessionId]: socket}
-const rooms = Room.rooms;       // rooms: {[sessionId]: roomId}
+const peers = Room.peers; // peers: {[sessionId]: socket}
+const rooms = Room.rooms; // rooms: {[sessionId]: roomId}
 const creators = Room.creators; // creator: {[roomId]: {sessionId: [], userId: ''}}
 const roomsList = Room.roomsList;
 
@@ -28,8 +28,7 @@ module.exports = (io) => {
       if (!creators[roomId]) {
         console.log('[LOG] : CREATE ROOM => ', roomId);
         creators[roomId] = { sessionId: [sessionId], userId: userId };
-      }
-      else if (creators[roomId].userId === userId) {
+      } else if (creators[roomId].userId === userId) {
         console.log('[LOG] : ADD HOST');
         creators[roomId].sessionId.push(sessionId);
 
@@ -43,7 +42,6 @@ module.exports = (io) => {
       const updatedStatus = encryptObj({ host: true, joined: true });
       socket.emit('host', updatedStatus);
     });
-
 
     socket.on('requestJoin', (userInfo, result, roomId) => {
       const { sessionId, name } = userInfo;
@@ -64,11 +62,9 @@ module.exports = (io) => {
       peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
     });
 
-
     socket.on('initSend', (id, userInfo) => {
       peers[id] && peers[id].emit('initSend', userInfo);
     });
-
 
     socket.on('signal', (data, sessionId) => {
       if (!peers[data.sessionId]) return;
@@ -77,7 +73,6 @@ module.exports = (io) => {
         signal: data.signal,
       });
     });
-
 
     socket.on('restore', (userInfo, roomId) => {
       const userStatus = decryptObj(userInfo.status);
@@ -98,13 +93,11 @@ module.exports = (io) => {
         console.log('[LOG] : RESTORE HOST OF : ', roomId);
         if (!creators[roomId]) {
           creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
-        }
-        else if (creators[roomId].userId === userInfo.userId) {
+        } else if (creators[roomId].userId === userInfo.userId) {
           creators[roomId].sessionId.push(sessionId);
         }
       }
     });
-
 
     socket.on('disconnect', () => {
       console.log('[LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
@@ -113,17 +106,20 @@ module.exports = (io) => {
       const targetCreators = creators[targetRoom]?.sessionId;
 
       socket.broadcast.to(targetRoom).emit('removePeer', sessionId);
-      peers[sessionId] && (delete peers[sessionId]);
-      socket[sessionId] && (delete socket[sessionId]);
-      
+      peers[sessionId] && delete peers[sessionId];
+      socket[sessionId] && delete socket[sessionId];
+
       if (targetCreators?.includes(sessionId)) {
         console.log('[LOG] : HOST IS DISCONNECTED');
         creators[targetRoom].sessionId = targetCreators.filter((id) => id !== sessionId);
+        if (creators[targetRoom].sessionId.length <= 0) {
+          socket.broadcast.to(targetRoom).emit('allHostDisconnected');
+        }
       }
 
       if (!io.sockets.adapter.rooms.get(rooms[sessionId])) {
-        creators[targetRoom] && (delete creators[targetRoom]);
-        roomsList[targetRoom] && (delete roomsList[targetRoom]);
+        creators[targetRoom] && delete creators[targetRoom];
+        roomsList[targetRoom] && delete roomsList[targetRoom];
       }
       rooms[sessionId] && delete rooms[sessionId];
     });
