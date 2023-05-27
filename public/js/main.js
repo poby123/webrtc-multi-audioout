@@ -195,7 +195,7 @@ function removePeer(sessionId) {
   deleteWaitList(sessionId);
 }
 
-function switchMedia() {
+async function switchMedia() {
   const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
   constraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
@@ -210,7 +210,8 @@ function switchMedia() {
   });
 
   localVideo.srcObject = null;
-  navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     updateLocalSoundMeter(stream);
     for (let id in peers) {
       for (let index in peers[id].streams[0].getTracks()) {
@@ -226,13 +227,14 @@ function switchMedia() {
         }
       }
     }
-
     localStream = stream;
     videoElement.srcObject = stream;
 
     !videoState && toggleVideo();
     !audioState && toggleMute();
-  });
+  } catch (error) {
+    setStatusText(`오류로 인해 디바이스를 변경하지 못했습니다: ${e.message}`);
+  }
 }
 
 function removeLocalStream() {
@@ -306,6 +308,18 @@ async function getDevices() {
 }
 
 async function getStream() {
+  let message = '';
+
+  if (audioInputSelect.length <= 0) {
+    constraints.audio = false;
+    message = `사용 가능한 오디오 입력 디바이스를 인식하지 못했습니다.`;
+  }
+  if (videoSelect.length <= 0) {
+    constraints.video = false;
+    message = `${message}\n 사용 가능한 비디오 입력 디바이스를 인식하지 못했습니다.`;
+  }
+  setStatusText(message);
+
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   localStream = stream;
   videoElement.srcObject = stream;
