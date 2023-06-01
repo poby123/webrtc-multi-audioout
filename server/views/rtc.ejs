@@ -21,7 +21,7 @@
       </section>
       <section class="section-peer-list card flex-1">
         <div class="close-button-container">
-          <img class="close-icon" src="/fonts/xmark.svg" alt="" onclick="toggleUserList()" />
+          <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleUserList()" />
         </div>
         <div class="status-container">
           <div class="a-user-container">
@@ -50,11 +50,11 @@
         <button class="config-icon" id="exitButton" title="exit" onclick="exit()">
           <img id="exitButtonImage" src="/fonts/times.svg" />
         </button>
-        <button class="config-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
-          <img id="muteButtonImage" src="/fonts/microphone.svg" />
-        </button>
         <button class="config-icon" id="vidButton" title="toggle video" onclick="toggleVideo()">
           <img id="videoButtonImage" src="/fonts/video.svg" />
+        </button>
+        <button class="config-icon bigger-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
+          <img id="muteButtonImage" src="/fonts/microphone.svg" />
         </button>
         <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
           <img id="configButtonImage" src="/fonts/cog.svg" />

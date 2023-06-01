@@ -57,6 +57,10 @@ button {
   cursor: pointer;
 }
 
+.invert {
+  filter: invert(100%);
+}
+
 /* section-peer-list */
 .section-peer-list {
   width: 20vw;
@@ -245,7 +249,7 @@ button {
 */
 .local-config {
   position: fixed;
-  min-height: 10vh;
+  min-height: 11vh;
   bottom: 0;
   width: 100%;
 
@@ -284,6 +288,13 @@ button {
   height: 25px;
   filter: invert(100%);
 }
+.bigger-icon img {
+  width: 50px;
+  height: 50px;
+  filter: invert(100%);
+}
+
+
 .local-config-modal {
   position: absolute;
   display: none;
