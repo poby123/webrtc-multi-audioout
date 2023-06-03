@@ -12,6 +12,7 @@ let meterRefreshs = {};
 
 /* local sound meter */
 let localSoundMeter;
+let mediaConstraints = { ...constraints };
 
 /* local status */
 let entranceCount = 0;

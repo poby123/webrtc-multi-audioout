@@ -13,10 +13,10 @@ const isPrefixRoom = PREFIX_ROOMS[roomId];
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
-const audioInputSelect = document.querySelector('select#audioInputSource');
-const audioOutputSelect = document.querySelector('select#audioOutputSource');
-const videoSelect = document.querySelector('select#videoSource');
-const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
+let audioInputSelect = document.querySelector('select#audioInputSource');
+let audioOutputSelect = document.querySelector('select#audioOutputSource');
+let videoSelect = document.querySelector('select#videoSource');
+let selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
 /**
  * Init start
@@ -200,12 +200,13 @@ function removePeer(sessionId) {
 async function switchMedia() {
   const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
-  constraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
-  constraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
+
+  mediaConstraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
+  mediaConstraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
 
   const tracks = localStream.getTracks();
-  const videoState = localStream.getVideoTracks()[0].enabled;
-  const audioState = localStream.getAudioTracks()[0].enabled;
+  const videoState = localStream.getVideoTracks()[0]?.enabled;
+  const audioState = localStream.getAudioTracks()[0]?.enabled;
 
   tracks.forEach(function (track) {
     track.stop();
@@ -213,8 +214,7 @@ async function switchMedia() {
 
   localVideo.srcObject = null;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    updateLocalSoundMeter(stream);
+    const stream = await getStream();
     for (let id in peers) {
       for (let index in peers[id].streams[0].getTracks()) {
         for (let index2 in stream.getTracks()) {
@@ -235,7 +235,7 @@ async function switchMedia() {
     !videoState && toggleVideo();
     !audioState && toggleMute();
   } catch (error) {
-    setStatusText(`오류로 인해 디바이스를 변경하지 못했습니다: ${e.message}`);
+    setStatusText(`오류로 인해 디바이스를 변경하지 못했습니다: ${error.message}`);
   }
 }
 
@@ -273,8 +273,8 @@ async function getDevices() {
   const devices = await navigator.mediaDevices.enumerateDevices();
   current_deviceInfos = devices;
 
-  const currentAudioInputDeviceId = constraints.audio?.deviceId?.exact;
-  const currentVideoInputDeviceId = constraints.video?.deviceId?.exact;
+  const currentAudioInputDeviceId = mediaConstraints.audio?.deviceId?.exact;
+  const currentVideoInputDeviceId = mediaConstraints.video?.deviceId?.exact;
 
   // Handles being called several times to update labels. Preserve values.
   const values = selectors.map((select) => select.value);
@@ -284,6 +284,9 @@ async function getDevices() {
     }
   });
   for (const { deviceId, label, kind } of devices) {
+    if (!deviceId) {
+      continue;
+    }
     const option = document.createElement('option');
     option.value = deviceId;
 
@@ -310,24 +313,46 @@ async function getDevices() {
 }
 
 async function getStream() {
+  if (getStream.counter === undefined) {
+    getStream.counter = 0;
+  }
   let message = '';
+  let audioStatus = true;
+  let videoStatus = true;
 
   if (audioInputSelect.length <= 0) {
-    constraints.audio = false;
+    mediaConstraints.audio = false;
     message = `사용 가능한 오디오 입력 디바이스를 인식하지 못했습니다.`;
+    audioStatus = false;
+  } else {
+    mediaConstraints.audio = { ...constraints.audio, deviceId: mediaConstraints.audio?.deviceId };
   }
   if (videoSelect.length <= 0) {
-    constraints.video = false;
+    mediaConstraints.video = false;
     message = `${message}\n 사용 가능한 비디오 입력 디바이스를 인식하지 못했습니다.`;
+    videoStatus = false;
+  } else {
+    mediaConstraints.video = { ...constraints.video, deviceId: mediaConstraints.video?.deviceId };
   }
-  setStatusText(message);
+  message && setStatusText(message);
 
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  if (!audioStatus && !videoStatus) {
+    return;
+  }
+
+  console.log('mediaConst : ', mediaConstraints);
+  const stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
   localStream = stream;
   videoElement.srcObject = stream;
 
-  localSoundMeter = new SoundMeter(new AudioContext());
-  updateLocalSoundMeter(stream);
+  if (audioStatus) {
+    getStream.counter++;
+    if (getStream.counter <= 1) {
+      localSoundMeter = new SoundMeter(new AudioContext());
+    }
+    updateLocalSoundMeter(stream);
+  }
+  return stream;
 }
 
 async function start() {

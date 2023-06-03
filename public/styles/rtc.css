@@ -110,13 +110,6 @@ button {
   align-items: center;
 }
 
-.section-peer-list .a-user-button-group {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .section-peer-list .profile-img {
   width: 40px;
   height: 40px;

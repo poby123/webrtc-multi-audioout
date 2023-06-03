@@ -178,6 +178,9 @@ function toggleUserList(show) {
 }
 
 function toggleMute() {
+  if (!localStream) {
+    return;
+  }
   for (const track of localStream.getAudioTracks()) {
     track.enabled = !track.enabled;
     const buttonStatus = track.enabled ? '/fonts/microphone.svg' : '/fonts/microphone-slash.svg';
@@ -245,7 +248,7 @@ function addWaitList(id) {
   profileGroup.className = 'a-user-profile-group';
 
   const buttonGroup = document.createElement('div');
-  buttonGroup.className = 'a-user-button-grouop';
+  buttonGroup.className = 'a-user-button-group';
 
   const profileImg = document.createElement('img');
   profileImg.src = value.profile;
