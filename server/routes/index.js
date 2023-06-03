@@ -7,6 +7,7 @@ const makeid = utility.makeid;
 const checkSignin = utility.checkSignin;
 
 let Room = require('../controllers/room');
+let PREFIX_ROOMS = require('../constants/prefixRoom');
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -16,8 +17,9 @@ router.get('/', function (req, res) {
   if (type == 'join' && roomId) {
     let status = { host: false, joined: false };
     status = encryptObj(status);
+    const isPrefixRoom = PREFIX_ROOMS[roomId]
 
-    if (!Room.roomsList[roomId]) {
+    if (!isPrefixRoom && !Room.roomsList[roomId]) {
       res.render('index', { title: 'Translate Platform', user: req.user, msg: '존재하지 않는 방입니다.' });
     } else if (checkSignin(req)) {
       const user = req.user;

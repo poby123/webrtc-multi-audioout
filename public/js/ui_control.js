@@ -128,6 +128,42 @@ function toggleConfig(show) {
   target.css('display', 'none');
 }
 
+function setEntranceMessage(msg) {
+  const target = document.getElementById('entrance-status-message');
+  target.innerHTML = msg;
+}
+
+function toggleEntranceModal(show, showPassword) {
+  if (showPassword) {
+    $('#entrance-room-password-section').removeClass('hidden');
+    $('#entrance-room-password-section').addClass('show');
+  }
+
+  const target = $('.entrance-modal');
+
+  const currentOpacity = target.css('opacity');
+  const nextOpacity = show !== undefined ? Number(show) : (Number(currentOpacity) + 1) % 2;
+
+  if (nextOpacity === 1) {
+    target.css('display', 'flex');
+    target.animate(
+      {
+        opacity: nextOpacity,
+      },
+      200,
+    );
+    return;
+  }
+
+  target.animate(
+    {
+      opacity: nextOpacity,
+    },
+    400,
+  );
+  target.css('display', 'none');
+}
+
 function toggleUserList(show) {
   if (show === undefined) {
     $('.section-peer-list').fadeToggle('fast');
@@ -263,7 +299,6 @@ function createParticipantsContainer(id, userInfo, stream) {
   let newVid = document.createElement('video');
   newVid.srcObject = stream;
   streams[id] = stream;
-  console.log('stream : ', stream);
   newVid.id = id;
   newVid.playsinline = false;
   newVid.autoplay = true;

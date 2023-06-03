@@ -69,6 +69,7 @@
       <div class="container">
         <div class="select">
           <div class="close-button-container">
+            <img class="close-icon" src="/fonts/reload.svg" alt="" onclick="getDevices()" />
             <img class="close-icon" src="/fonts/xmark.svg" alt="" onclick="toggleConfig()" />
           </div>
           <span>비디오 설정 : </span>
@@ -84,6 +85,30 @@
           <span>스피커 : </span>
           <br />
           <select id="audioOutputSource"></select>
+        </div>
+      </div>
+    </section>
+
+    <section class="entrance-modal">
+      <form class="container" id="entrance-form" onsubmit="return handleEntrance(event)">
+        <div class="unit">
+          <label>
+            이름
+          </label>
+          <input placeholder="홍길동" name="username" type="text" id="entrance-username" value="<%=username%>"/>
+        </div>
+        <div class="unit hidden" id="entrance-room-password-section">
+          <label>
+            비밀번호
+          </label>
+          <input placeholder="" name="roomPassword" type="text" id="entrance-room-password"/>
+        </div>
+        <div class="unit">
+          <label id="entrance-status-message">
+          </label>
+        </div>
+        <div class="unit">
+          <button type="submit">참여하기</button>
         </div>
       </div>
     </section>

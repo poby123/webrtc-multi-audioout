@@ -9,23 +9,7 @@ let status = statusBox.value;
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const roomId = urlParams.get('id');
-
-if (!myName) {
-  window.focus();
-  let name = undefined;
-
-  do {
-    name = prompt('참여할 이름을 정해주세요 : ');
-  } while (!name);
-
-  myName = name;
-  myProfile = '/images/default_profile.webp';
-  myId = makeid(30);
-}
-
-myInfo = { name: myName, userId: myId, profile: myProfile, sessionId: mySessionId, status: status };
-users['myInfo'] = myInfo;
-addPeerList('myInfo', myInfo);
+const isPrefixRoom = PREFIX_ROOMS[roomId];
 
 /* media resources */
 const videoElement = document.querySelector('#localVideo');
@@ -34,24 +18,31 @@ const audioOutputSelect = document.querySelector('select#audioOutputSource');
 const videoSelect = document.querySelector('select#videoSource');
 const selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
+/**
+ * Init start
+ */
 function init() {
   socket = io();
 
   /* set my name, title*/
-  localUserTag.innerText = myInfo.name;
   document.title = `Translate | ${roomId}`;
 
-  socket.emit('init', myInfo, roomId);
-  setStatusText('회의 참여 요청을 보냈습니다. 호스트가 수락하면 참여하게 됩니다.');
+  socket.on('prefixRoomApproved', () => {
+    socket.emit('initPrefixRoom', myInfo, roomId);
+    setStatusText(`${roomId}에 참여했습니다!`);
+  });
 
   socket.on('host', (updatedStatus) => {
     myInfo.status = updatedStatus;
+    toggleEntranceModal(false);
     setStatusText('회의를 시작했습니다.');
+
+    users['myInfo'] = myInfo;
+    addPeerList('myInfo', myInfo);
   });
 
   socket.on('requestJoin', (userInfo) => {
     window.focus();
-    console.log('request Join');
     setStatusText(`새로운 유저가 입장을 요청했습니다`);
     const otherId = userInfo.sessionId;
     waitUsers[otherId] = userInfo;
@@ -62,14 +53,26 @@ function init() {
   /*****************************/
   socket.on('approvedJoin', (updatedStatus) => {
     setStatusText('회의에 참여했습니다.');
+    toggleEntranceModal(false);
     myInfo.status = updatedStatus;
+
+    users['myInfo'] = myInfo;
+    addPeerList('myInfo', myInfo);
   });
 
   /*****************************/
   socket.on('rejectJoin', () => {
+    setStatusText('방장이 입장을 거부했습니다.');
+    setEntranceMessage('방장이 입장을 거부했습니다.');
+  });
+
+  /*****************************/
+  socket.on('invalidPassword', () => {
     window.focus();
-    alert('방장이 입장을 거부했습니다.');
-    exit();
+    setStatusText('잘못된 비밀번호입니다.');
+    setEntranceMessage('잘못된 비밀번호입니다.');
+    const passwordTarget = document.getElementById('entrance-room-password');
+    passwordTarget.value = '';
   });
 
   /*****************************/
@@ -84,12 +87,12 @@ function init() {
   socket.on('initSend', (otherInfo) => {
     console.log('INIT SEND ' + otherInfo.name);
     myInfo.joined = true;
+    toggleEntranceModal(false);
     addPeer(true, otherInfo);
   });
 
   /*****************************/
   socket.on('removePeer', (id) => {
-    console.log('removing peer ' + id);
     removePeer(id);
     deleteWaitList(id);
   });
@@ -104,7 +107,6 @@ function init() {
   /*****************************/
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
-    setStatusText('서버와의 연결이 끊겼습니다.');
 
     for (const [key] of Object.entries(waitUsers)) {
       deleteWaitList(key);
@@ -118,6 +120,7 @@ function init() {
     peers[data.sessionId].signal(data.signal);
   });
 }
+/** Init end */
 
 function addPeer(am_initiator, userInfo) {
   const id = userInfo.sessionId;
@@ -188,7 +191,6 @@ function removePeer(sessionId) {
     delete peers[sessionId];
   }
 
-  console.log('meter : ', meterRefreshs[sessionId]);
   meterRefreshs[sessionId] && delete meterRefreshs[sessionId];
 
   deletePeerList(sessionId);
@@ -323,25 +325,68 @@ async function getStream() {
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   localStream = stream;
   videoElement.srcObject = stream;
+
+  localSoundMeter = new SoundMeter(new AudioContext());
   updateLocalSoundMeter(stream);
 }
 
 async function start() {
   try {
-    console.log('start!');
     await getDevices();
     await getStream();
     toggleMute();
   } catch (e) {
-    console.log(e);
-  } finally {
-    init();
+    setStatusText(`[function start] 다음과 같은 에러가 발생했습니다. ${e.message}`);
+    console.error(e);
   }
 }
 
-window.onload = function () {
+function initUserInfo(username, roomPassword) {
+  myName = username;
+
+  myInfo = {
+    name: myName,
+    userId: myId || makeid(30),
+    profile: myProfile || '/images/default_profile.webp',
+    sessionId: mySessionId,
+    status: status,
+    roomPassword: roomPassword,
+  };
+}
+
+function handleEntrance(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('entrance-username').value;
+  const roomPassword = document.getElementById('entrance-room-password').value;
+
+  initUserInfo(username, roomPassword);
+
+  if (entranceCount <= 0) {
+    init();
+  }
+
+  localUserTag.innerText = myInfo.name;
+  socket.emit('init', myInfo, roomId);
+  setStatusText('회의 참여 요청을 보냈습니다. 호스트가 수락하면 참여하게 됩니다.');
+  entranceCount += 1;
+
+  return false;
+}
+
+function entranceFlow() {
+  toggleEntranceModal(true, !!isPrefixRoom);
+}
+
+function mediaInitFlow() {
   audioInputSelect.onchange = switchMedia;
   videoSelect.onchange = switchMedia;
   audioOutputSelect.onchange = handleSoundChange;
   start();
+}
+
+window.onload = function () {
+  window.focus();
+  mediaInitFlow();
+  entranceFlow();
 };

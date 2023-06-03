@@ -33,3 +33,17 @@ const constraints = {
     volume: 1.0,
   },
 };
+
+/**
+ * PREFIX ID ROOMS
+ */
+const PREFIX_ROOMS = {
+  ENG: 'ENGLISH',
+  JAP: 'JAPANESE',
+  CHI: 'CHINESE',
+  FRE: 'FRENCH',
+  RUS: 'RUSSIAN',
+  VIE: 'VIETNAM',
+  SPA: 'SPAIN',
+  MON: 'MONGOL'
+}

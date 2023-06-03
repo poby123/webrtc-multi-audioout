@@ -49,6 +49,7 @@ button {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+  gap: 1rem;
 }
 
 .close-icon {
@@ -294,7 +295,6 @@ button {
   filter: invert(100%);
 }
 
-
 .local-config-modal {
   position: absolute;
   display: none;
@@ -333,6 +333,86 @@ button {
 }
 
 .local-config-modal .select select {
+  height: 1.5em;
+  border: none;
+  outline: none;
+  border-bottom: 1px solid black;
+}
+
+/*
+
+*/
+.entrance-modal {
+  position: absolute;
+  display: flex;
+  width: 500px;
+  height: 400px;
+  opacity: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  background-color: white;
+  border-radius: 20px;
+}
+.entrance-modal .container {
+  display: flex;
+  width: 90%;
+  height: 90%;
+  margin: auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+
+  border: 1px solid blue;
+}
+
+.entrance-modal .unit {
+  /* border: 1px solid red; */
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.entrance-modal .unit-password {
+  display: none;
+}
+
+.entrance-modal .hidden {
+  display: none;
+}
+
+.entrance-modal .show {
+  display: flex;
+}
+
+.entrance-modal input {
+  font-size: inherit;
+  line-height: 1.7rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--main-background-color);
+  border-radius: 6px;
+}
+
+.entrance-modal button {
+  font-size: inherit;
+  line-height: 1.7rem;
+  color: white;
+  background-color: var(--main-background-color);
+  margin-top: 2rem;
+  padding: 0.2rem;
+  border-radius: 6px;
+}
+
+.entrance-modal .select span {
+  color: rgb(6, 85, 6);
+}
+
+.entrance-modal .select select {
   height: 1.5em;
   border: none;
   outline: none;

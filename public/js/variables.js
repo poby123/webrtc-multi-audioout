@@ -11,7 +11,10 @@ let users = {};
 let meterRefreshs = {};
 
 /* local sound meter */
-const localSoundMeter = new SoundMeter(new AudioContext());
+let localSoundMeter;
+
+/* local status */
+let entranceCount = 0;
 
 /* document contexts */
 const configModal = document.querySelector('.local-config-modal');
