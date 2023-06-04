@@ -197,8 +197,8 @@ function removePeer(sessionId) {
   deleteWaitList(sessionId);
 }
 
+const audioSource = audioInputSelect.value;
 async function switchMedia() {
-  const audioSource = audioInputSelect.value;
   const videoSource = videoSelect.value;
 
   mediaConstraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
@@ -284,9 +284,6 @@ async function getDevices() {
     }
   });
   for (const { deviceId, label, kind } of devices) {
-    if (!deviceId) {
-      continue;
-    }
     const option = document.createElement('option');
     option.value = deviceId;
 
