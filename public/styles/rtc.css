@@ -252,6 +252,7 @@ button {
 
   display: flex;
   align-items: center;
+  flex-direction: column;
 }
 
 .local-config-container {
@@ -310,6 +311,11 @@ button {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+#local-sound-meter {
+  width: 60%;
+  margin-bottom: 1rem;
 }
 
 .local-config-modal .select {
