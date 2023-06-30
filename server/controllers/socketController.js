@@ -154,6 +154,18 @@ module.exports = (io) => {
       rooms[sessionId] = roomId;
       roomsList[roomId] = true;
 
+      // in case prefix room
+      const isPrefixRoom = PREFIX_ROOMS[roomId];
+      if (isPrefixRoom) {
+        if (!creators[roomId]) {
+          creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
+        } else {
+          creators[roomId].sessionId.push(sessionId);
+        }
+        return;
+      }
+
+      // not prefix room
       if (userStatus.host) {
         console.log('[LOG] : RESTORE HOST OF : ', roomId);
         if (!creators[roomId]) {
