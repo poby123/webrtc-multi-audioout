@@ -181,10 +181,12 @@ function removePeer(sessionId) {
     videoEl.srcObject = null;
   }
 
-  while (videoContainer.hasChildNodes()) {
-    videoContainer.removeChild(videoContainer.firstChild);
+  if (videoContainer) {
+    while (videoContainer.hasChildNodes()) {
+      videoContainer.removeChild(videoContainer.firstChild);
+    }
+    videoContainer.parentNode.removeChild(videoContainer);
   }
-  videoContainer.parentNode.removeChild(videoContainer);
 
   if (peers[sessionId]) {
     peers[sessionId].destroy();
