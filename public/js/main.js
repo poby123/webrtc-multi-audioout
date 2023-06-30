@@ -107,6 +107,9 @@ function init() {
   /*****************************/
   socket.on('disconnect', () => {
     console.log('GOT DISCONNECTED');
+    setStatusText(
+      '연결이 끊겼습니다. 다른 참가자의 화면이 정상적이지 않다면, \n 새로고침을 하거나 회의를 나갔다가 다시 들어오는 과정이 필요할 수 있습니다.',
+    );
 
     for (const [key] of Object.entries(waitUsers)) {
       deleteWaitList(key);
