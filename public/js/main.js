@@ -244,6 +244,39 @@ async function switchMedia() {
   }
 }
 
+function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId !== 'undefined') {
+    element
+      .setSinkId(sinkId)
+      .then(() => {
+        console.log(`Success, audio output device attached: ${sinkId}`);
+      })
+      .catch((error) => {
+        let errorMessage = error;
+        if (error.name === 'SecurityError') {
+          errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+        }
+        setStatusText(errorMessage);
+        // Jump back to first output device in the list as it's the default.
+        audioOutputSelect.selectedIndex = 0;
+      });
+  } else {
+    setStatusText('Browser does not support output device selection.');
+  }
+}
+
+function handleSoundChange() {
+  const audioDestination = audioOutputSelect.value;
+
+  try {
+    const videos = document.querySelectorAll('video');
+    videos.forEach((v) => attachSinkId(v, audioDestination));
+  } finally {
+    const localVideoElement = document.getElementById('localVideo');
+    localVideoElement.muted = true;
+  }
+}
+
 function removeLocalStream() {
   if (localStream) {
     const tracks = localStream.getTracks();
