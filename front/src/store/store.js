@@ -1,10 +1,10 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { rtcSlice } from './ducks/rtcSlice';
+import { rtcReducer } from './ducks/rtcSlice';
 
 const rootReducer = combineReducers({
-  rtc: rtcSlice,
+  rtc: rtcReducer,
 });
 export const persistConfig = {
   key: 'root',
@@ -16,6 +16,10 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export const persistor = persistStore(store);
