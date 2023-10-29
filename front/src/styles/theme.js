@@ -1,6 +1,7 @@
 const colors = {
   primary500: '#3C4F76',
   primary900: '#2B3A55',
+  secondary500: '#258991',
   grey100: '#FFFFFF',
   grey900: '#000000',
   focus100: '#C870B5',
