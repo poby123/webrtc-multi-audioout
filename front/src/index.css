@@ -1,0 +1,49 @@
+@charset "utf-8";
+@font-face {
+  font-family: 'BalooDa2';
+  src: url('./assets/fonts/BalooDa2-Regular.ttf');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'BalooDa2';
+  src: url('./assets/fonts/BalooDa2-SemiBold.ttf');
+  font-weight: 600;
+}
+@font-face {
+  font-family: 'Nanum Gothic';
+  font-style: normal;
+  font-weight: normal;
+  src: url('./assets/fonts/NanumGothic/NanumGothic-Regular.eot');
+  src: url('./assets/fonts/NanumGothic/NanumGothic-Regular.eot?#iefix') format('embedded-opentype'),
+    url('./assets/fonts/NanumGothic/NanumGothic-Regular.woff2') format('woff2'),
+    url('./assets/fonts/NanumGothic/NanumGothic-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'Nanum Gothic';
+  font-style: normal;
+  font-weight: bold;
+  src: url('./assets/fonts/NanumGothic/NanumGothic-Bold.eot');
+  src: url('./assets/fonts/NanumGothic/NanumGothic-Bold.eot?#iefix') format('embedded-opentype'),
+    url('./assets/fonts/NanumGothic/NanumGothic-Bold.woff2') format('woff2'),
+    url('./assets/fonts/NanumGothic/NanumGothic-Bold.woff') format('woff');
+}
+body {
+  margin: 0;
+}
+button {
+  background: none;
+  border: none;
+  outline: none;
+}
+a {
+  text-decoration: none;
+}
+button:hover {
+  cursor: pointer;
+}
+.icon {
+  display: inline-block;
+  background-size: cover;
+  width: 35px;
+  height: 35px;
+}
