@@ -26,6 +26,7 @@ const Modal = ({ isOpen, children, onClose }) => {
           transform: 'translate(-50%, -50%)',
         },
       }}
+      appElement={document.getElementById('root')}
     >
       <Wrapper>
         <ModalHeader>

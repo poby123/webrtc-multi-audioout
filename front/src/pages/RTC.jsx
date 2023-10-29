@@ -10,7 +10,7 @@ export const RTCPage = () => {
   const { myInfo } = useContext(RTCContext);
   const [showConfig, setShowConfig] = useState(true);
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [fooEvents, setFooEvents] = useState([]);
+  let [peers, setPeers] = useState({});
 
   console.log('connected: ', isConnected, ' ', myInfo);
 
@@ -35,9 +35,6 @@ export const RTCPage = () => {
   return (
     <StyledArticle>
       <Container>
-        <Modal isOpen={showConfig} onClose={() => setShowConfig(false)}>
-          <h1>HI</h1>
-        </Modal>
         <VideoSection />
       </Container>
       <BottomNavigator />

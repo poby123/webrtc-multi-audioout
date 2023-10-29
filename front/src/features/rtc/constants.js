@@ -1,7 +1,7 @@
 /**
  * RTCPeerConnection configuration
  */
-const configuration = {
+export const configuration = {
   iceServers: [
     {
       urls: 'stun:stun.l.google.com:19302',
@@ -43,7 +43,7 @@ const configuration = {
 /**
  * UserMedia constraints
  */
-const constraints = {
+export const constraints = {
   video: {
     width: 1280,
     height: 720,
@@ -63,7 +63,7 @@ const constraints = {
 /**
  * PREFIX ID ROOMS
  */
-const PREFIX_ROOMS = {
+export const PREFIX_ROOMS = {
   ENG: 'ENGLISH',
   JAP: 'JAPANESE',
   CHI: 'CHINESE',
