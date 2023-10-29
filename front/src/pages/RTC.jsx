@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { BottomNavigator } from '../components/BottomNavigator';
+import { useEffect } from 'react';
 
 const StyledArticle = styled.article`
   min-height: calc(var(--vh, 1vh) * 100);
@@ -7,6 +8,8 @@ const StyledArticle = styled.article`
 `;
 
 export const RTCPage = () => {
+  useEffect(() => {}, []);
+
   return (
     <StyledArticle>
       <BottomNavigator />

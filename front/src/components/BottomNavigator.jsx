@@ -7,7 +7,7 @@ import { VideoSlashIcon } from './icons/VideoSlashIcon';
 
 export const BottomNavigator = () => {
   const { colors } = useTheme();
-  const size = '24px';
+  const size = 24;
 
   return (
     <StyledBottomSection>
@@ -21,7 +21,7 @@ export const BottomNavigator = () => {
         </RoundedButton>
 
         <RoundedButton>
-          <MicIcon color={colors.grey100} size={'48px'} />
+          <MicIcon color={colors.grey100} size={24 * 2} />
         </RoundedButton>
 
         <RoundedButton>
