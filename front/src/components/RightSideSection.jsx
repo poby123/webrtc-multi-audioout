@@ -1,10 +1,10 @@
 import { memo } from 'react';
 import styled from 'styled-components';
 
-export const UserListSection = memo(() => {
+export const RightSideSection = memo(({ children }) => {
   return (
     <Section>
-      <Container></Container>
+      <Container>{children}</Container>
     </Section>
   );
 });

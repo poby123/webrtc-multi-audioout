@@ -1,5 +1,8 @@
 node_modules
 public/videos
+public/static
+public/*.*
+
 test.*
 .env
 *.rdb

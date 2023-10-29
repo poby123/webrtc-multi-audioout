@@ -17,7 +17,7 @@ router.get('/', function (req, res) {
   if (type == 'join' && roomId) {
     let status = { host: false, joined: false };
     status = encryptObj(status);
-    const isPrefixRoom = PREFIX_ROOMS[roomId]
+    const isPrefixRoom = PREFIX_ROOMS[roomId];
 
     if (!isPrefixRoom && !Room.roomsList[roomId]) {
       res.render('index', { title: 'Translate Platform', user: req.user, msg: '존재하지 않는 방입니다.' });
@@ -32,11 +32,13 @@ router.get('/', function (req, res) {
       });
     } else {
       res.render('rtc', {
-        username: '',
-        userid: '',
-        profile: '',
-        sessionId: new Date().getTime().toString() + makeid(10),
-        status: status,
+        user: {
+          username: '',
+          userid: '',
+          profile: '',
+          sessionId: new Date().getTime().toString() + makeid(10),
+          status: status,
+        },
       });
     }
   } else if (type == 'create') {

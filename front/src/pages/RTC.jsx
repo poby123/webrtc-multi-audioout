@@ -1,17 +1,44 @@
-import { useEffect } from 'react';
+import { VideoSection } from 'components/VideoSection';
+import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BottomNavigator } from '../components/BottomNavigator';
-import { VideoSection } from 'components/VideoSection';
-import { UserListSection } from 'components/UserListSection';
+import Modal from 'components/Modal';
+import { socket } from 'socket';
+import RTCContext from 'features/rtc/RTCContext';
 
 export const RTCPage = () => {
-  useEffect(() => {}, []);
+  const { myInfo } = useContext(RTCContext);
+  const [showConfig, setShowConfig] = useState(true);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [fooEvents, setFooEvents] = useState([]);
+
+  console.log('connected: ', isConnected, ' ', myInfo);
+
+  useEffect(() => {
+    function onConnect() {
+      console.log('is connected');
+    }
+
+    function onDisconnect() {
+      console.log('disconnected');
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+    };
+  }, []);
 
   return (
     <StyledArticle>
       <Container>
+        <Modal isOpen={showConfig} onClose={() => setShowConfig(false)}>
+          <h1>HI</h1>
+        </Modal>
         <VideoSection />
-        <UserListSection />
       </Container>
       <BottomNavigator />
     </StyledArticle>
