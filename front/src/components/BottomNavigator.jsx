@@ -1,15 +1,16 @@
+import { memo } from 'react';
 import { useAppDispatch, useAppSelector } from 'store/Hooks';
+import { rtcActions } from 'store/ducks/rtcSlice';
 import styled, { useTheme } from 'styled-components';
+import { getCurrentDimension } from 'utils/getCurrentDimension';
+import { rtcState } from '../features/rtc/store';
 import { ConfigIcon } from './icons/ConfigIcon';
 import { BoldCrossIcon } from './icons/CrossIcon';
 import { MicIcon } from './icons/MicIcon';
-import { UserIcon } from './icons/UserIcon';
-import { VideoSlashIcon } from './icons/VideoSlashIcon';
-import { VideoIcon } from './icons/VideoIcon';
 import { MicSlashIcon } from './icons/MicSlashIcon';
-import { rtcActions } from 'store/ducks/rtcSlice';
-import { memo } from 'react';
-import { getCurrentDimension } from 'utils/getCurrentDimension';
+import { UserIcon } from './icons/UserIcon';
+import { VideoIcon } from './icons/VideoIcon';
+import { VideoSlashIcon } from './icons/VideoSlashIcon';
 
 export const BottomNavigator = memo(() => {
   const { colors } = useTheme();
@@ -23,10 +24,16 @@ export const BottomNavigator = memo(() => {
 
   const onToggleVideo = () => {
     dispatch(rtcActions.setVideoState(!isActiveVideo));
+    for (const track of rtcState.localStream.getVideoTracks()) {
+      track.enabled = !track.enabled;
+    }
   };
 
   const onToggleMic = () => {
     dispatch(rtcActions.setMicState(!isActiveMic));
+    for (const track of rtcState.localStream.getAudioTracks()) {
+      track.enabled = !track.enabled;
+    }
   };
 
   const onToggleConfig = () => {};
@@ -35,6 +42,7 @@ export const BottomNavigator = memo(() => {
 
   return (
     <StyledBottomSection>
+      <Meter max={1} high={0.25} />
       <Container>
         <RoundedButton onClick={onClickExit}>
           <BoldCrossIcon color={colors.grey100} size={size} />
@@ -42,17 +50,17 @@ export const BottomNavigator = memo(() => {
 
         <RoundedButton onClick={onToggleVideo}>
           {isActiveVideo ? (
-            <VideoIcon color={colors.grey100} size={size} />
-          ) : (
             <VideoSlashIcon color={colors.grey100} size={size} />
+          ) : (
+            <VideoIcon color={colors.grey100} size={size} />
           )}
         </RoundedButton>
 
         <RoundedButton onClick={onToggleMic}>
           {isActiveMic ? (
-            <MicIcon color={colors.grey100} size={size * 2} />
-          ) : (
             <MicSlashIcon color={colors.focus100} size={size * 2} />
+          ) : (
+            <MicIcon color={colors.grey100} size={size * 2} />
           )}
         </RoundedButton>
 
@@ -92,4 +100,8 @@ const Container = styled.div`
   justify-content: space-around;
   align-items: center;
   margin-bottom: 0.5rem;
+`;
+
+const Meter = styled.meter`
+  width: 100%;
 `;

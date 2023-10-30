@@ -6,17 +6,14 @@ import { ThemeProvider } from 'styled-components';
 import App from './App';
 import './index.css';
 import { theme } from './styles/theme';
-import { RTCContextProvider } from 'features/rtc/RTCContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <RTCContextProvider>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ThemeProvider theme={theme}>
-          <App />
-        </ThemeProvider>
-      </PersistGate>
-    </Provider>
-  </RTCContextProvider>,
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <ThemeProvider theme={theme}>
+        <App />
+      </ThemeProvider>
+    </PersistGate>
+  </Provider>,
 );
