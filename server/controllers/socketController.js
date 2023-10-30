@@ -96,6 +96,9 @@ module.exports = (io) => {
       socket.emit('host', updatedStatus);
     });
 
+    /**
+     * Request join
+     */
     socket.on('requestJoin', (userInfo, result, roomId) => {
       if (!userInfo) {
         return;
@@ -116,6 +119,22 @@ module.exports = (io) => {
       }
       const updatedStatus = encryptObj({ host: false, joined: true });
       peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
+    });
+
+    /**
+     * Chat
+     */
+    socket.on('chat', (fromUserInfo, message) => {
+      if (!fromUserInfo) {
+        return;
+      }
+      const { sessionId } = fromUserInfo;
+
+      for (const id in peers) {
+        if (rooms[id] != rooms[sessionId]) continue;
+        if (id === sessionId) continue;
+        peers[id].emit('chat', fromUserInfo, message);
+      }
     });
 
     /**

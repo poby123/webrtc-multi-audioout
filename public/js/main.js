@@ -122,6 +122,12 @@ function init() {
   socket.on('signal', (data) => {
     peers[data.sessionId].signal(data.signal);
   });
+
+  /************************** */
+  socket.on('chat', (fromUserInfo, message) => {
+    console.log(fromUserInfo, ' ', message);
+    createChatContainer(fromUserInfo, message, fromUserInfo.sessionId === myInfo.sessionId);
+  });
 }
 /** Init end */
 
@@ -360,14 +366,16 @@ async function getStream() {
     message = `사용 가능한 오디오 입력 디바이스를 인식하지 못했습니다.`;
     audioStatus = false;
   } else {
-    mediaConstraints.audio = { ...constraints.audio, deviceId: mediaConstraints.audio?.deviceId };
+    const defaultAudioInput = current_deviceInfos.filter((cp) => cp.kind === 'audioinput')[0]?.deviceId;
+    mediaConstraints.audio = { ...constraints.audio, deviceId: mediaConstraints.audio?.deviceId || defaultAudioInput };
   }
   if (videoSelect.length <= 0) {
     mediaConstraints.video = false;
     message = `${message}\n 사용 가능한 비디오 입력 디바이스를 인식하지 못했습니다.`;
     videoStatus = false;
   } else {
-    mediaConstraints.video = { ...constraints.video, deviceId: mediaConstraints.video?.deviceId };
+    const defaultVideoInput = current_deviceInfos.filter((cp) => cp.kind === 'videoinput')[0]?.deviceId;
+    mediaConstraints.video = { ...constraints.video, deviceId: mediaConstraints.video?.deviceId || defaultVideoInput };
   }
   message && setStatusText(message);
 
@@ -394,7 +402,7 @@ async function start() {
   try {
     await getDevices();
     await getStream();
-    toggleMute();
+    // toggleMute();
   } catch (e) {
     setStatusText(`[function start] 다음과 같은 에러가 발생했습니다. ${e.message}`);
     console.error(e);

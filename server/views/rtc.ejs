@@ -3,7 +3,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <title>Translate</title>
-    <link rel="stylesheet" href="/styles/rtc.css" />
+    <link rel="stylesheet" href="/styles/rtc/rtc.css" />
+    <link rel="stylesheet" href="/styles/rtc/chat.css" />
   </head>
 
   <body>
@@ -18,6 +19,8 @@
           </div>
         </div>
       </section>
+
+      <!-- Peer -->
       <section class="section-peer-list card flex-1">
         <div class="close-button-container">
           <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleUserList()" />
@@ -42,6 +45,20 @@
                 </div> -->
         </div>
       </section>
+
+      <!-- Chat -->
+      <section class="section-chat card flex-1">
+        <div class="close-button-container">
+          <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleChat()" />
+        </div>
+        <div class="chat-input-container">
+            <textarea class="chat-input" rows="2" cols="10"></textarea> 
+            <button class="chat-send-button">send</button>
+        </div>
+        <div class="chat-content-container">
+         
+        </div>
+      </section>
     </div>
 
     <section class="local-config">
@@ -60,6 +77,9 @@
           <img id="configButtonImage" src="/fonts/cog.svg" />
         </button>
         <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()">
+          <img id="userButtonImage" src="/fonts/user.svg" />
+        </button>
+        <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleChat()">
           <img id="userButtonImage" src="/fonts/user.svg" />
         </button>
       </div>
@@ -133,5 +153,6 @@
     <script src="/js/utility.js"></script>
     <script src="/js/ui_control.js"></script>
     <script src="/js/main.js" async></script>
+    <script src="/js/chat.js" async></script>
   </body>
 </html>
