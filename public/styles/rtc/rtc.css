@@ -1,6 +1,7 @@
 :root {
   --main-font-color: rgb(159, 244, 255);
   --main-background-color: #2b3a55;
+  --card-background-color: #3c5076;
 }
 
 body {
@@ -31,7 +32,7 @@ button {
 }
 
 .card {
-  background-color: #3c5076;
+  background-color: var(--card-background-color);
   padding: 1rem;
   border-radius: 10px;
   margin: 0.5rem;

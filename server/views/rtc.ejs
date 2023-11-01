@@ -31,18 +31,22 @@
           </div>
         </div>
         <div class="wait-container">
-          <!-- <div class="a-user-container">
-                    <button id="" class="approve-button">수락</button>
-                    <button id="" class="reject-button">거절</button>
-                    <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
-                    <span class="profile-name">이름</span>
-                </div> -->
+          <!-- 
+            <div class="a-user-container">
+                <button id="" class="approve-button">수락</button>
+                <button id="" class="reject-button">거절</button>
+                <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
+                <span class="profile-name">이름</span>
+            </div> 
+          -->
         </div>
         <div class="peer-container">
-          <!-- <div class="a-user-container">
-                    <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
-                    <span class="profile-name">이름</span>
-                </div> -->
+          <!-- 
+            <div class="a-user-container">
+              <img class="profile-img" src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"/>
+              <span class="profile-name">이름</span>
+            </div> 
+          -->
         </div>
       </section>
 
@@ -52,8 +56,10 @@
           <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleChat()" />
         </div>
         <div class="chat-input-container">
-            <textarea class="chat-input" rows="2" cols="10"></textarea> 
-            <button class="chat-send-button">send</button>
+            <textarea id="chat-text-area" class="chat-input" rows="2" cols="10"></textarea> 
+            <button class="chat-send-button">
+              <img src="/fonts/airplane.svg" style="color: white"/>
+            </button>
         </div>
         <div class="chat-content-container">
          
@@ -64,8 +70,8 @@
     <section class="local-config">
       <meter id="local-sound-meter"></meter>
       <div class="local-config-container">
-        <button class="config-icon" id="exitButton" title="exit" onclick="exit()">
-          <img id="exitButtonImage" src="/fonts/times.svg" />
+        <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
+          <img id="configButtonImage" src="/fonts/cog.svg" />
         </button>
         <button class="config-icon" id="vidButton" title="toggle video" onclick="toggleVideo()">
           <img id="videoButtonImage" src="/fonts/video.svg" />
@@ -73,14 +79,15 @@
         <button class="config-icon bigger-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
           <img id="muteButtonImage" src="/fonts/microphone.svg" />
         </button>
-        <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
-          <img id="configButtonImage" src="/fonts/cog.svg" />
-        </button>
         <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()">
           <img id="userButtonImage" src="/fonts/user.svg" />
         </button>
-        <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleChat()">
-          <img id="userButtonImage" src="/fonts/user.svg" />
+        <button class="config-icon" id="chatButton" title="toggle chat list" onclick="toggleChat()">
+          <svg xmlns="http://www.w3.org/2000/svg" height="1.8em" viewBox="0 0 512 512">
+            <!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+            <path fill="currentColor" d="M512 240c0 114.9-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6C73.6 471.1 44.7 480 16 480c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4l0 0 0 0 0 0 0 0 .3-.3c.3-.3 .7-.7 1.3-1.4c1.1-1.2 2.8-3.1 4.9-5.7c4.1-5 9.6-12.4 15.2-21.6c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208z"/>
+          </svg>
+          <span id="chat-number">0</span>
         </button>
       </div>
     </section>

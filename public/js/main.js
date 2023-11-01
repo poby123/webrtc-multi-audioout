@@ -455,6 +455,8 @@ function mediaInitFlow() {
 
 window.onload = function () {
   window.focus();
+  toggleChat(false);
+
   mediaInitFlow();
   entranceFlow();
 };

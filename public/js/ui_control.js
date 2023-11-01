@@ -178,19 +178,6 @@ function toggleUserList(show) {
   }
 }
 
-function toggleChat(show) {
-  if (show === undefined) {
-    $('.section-chat').fadeToggle('fast');
-    return;
-  }
-
-  if (show) {
-    $('.section-chat').fadeIn('fast');
-  } else {
-    $('.section-chat').fadeOut('fast');
-  }
-}
-
 function toggleMute() {
   if (!localStream) {
     return;
@@ -304,48 +291,6 @@ function deleteWaitList(id) {
   targetContainer.parentNode.removeChild(targetContainer);
 
   delete waitUsers[id];
-}
-
-function createChatContainer(userInfo, message, isMy) {
-  // <div class="other-chat-content">
-  //   <div class="user-profile">
-  //     <img
-  //       class="profile-image"
-  //       src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"
-  //     />
-  //     <span class="profile-name">이름</span>
-  //   </div>
-  //   <div class="chat-content">
-  //     안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니?
-  //   </div>
-  // </div>;
-
-  const chatWrapper = document.createElement('div');
-  chatWrapper.className = `${isMy ? 'my' : 'other'}-chat-content`;
-
-  // user
-  const userProfile = document.createElement('div');
-  userProfile.className = 'user-profile';
-
-  const profileImage = document.createElement('img');
-  profileImage.className = 'profile-image';
-  profileImage.src = userInfo.profile;
-
-  const userName = document.createElement('span');
-  userName.className = 'profile-name';
-  userName.innerHTML = userInfo.name;
-
-  userProfile.append(profileImage, userName);
-
-  // content
-  const chatContent = document.createElement('div');
-  chatContent.className = 'chat-content';
-  chatContent.innerHTML = message;
-
-  chatWrapper.append(userProfile, chatContent);
-  chatContentContainer.append(chatWrapper);
-
-  chatContentContainer.scrollTop = chatContentContainer.scrollHeight;
 }
 
 function createParticipantsContainer(id, userInfo, stream) {
