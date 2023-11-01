@@ -138,7 +138,7 @@ function createChatContainer(userInfo, message, isMy) {
       }
 
       console.log('emit!');
-      socket.emit('translate', userInfo, message, 'en', chatId);
+      socket.emit('translate', userInfo, message, chatLanguage || 'en', chatId);
     });
 
     chatWrapper.append(transButton);
@@ -156,3 +156,11 @@ function createChatContainer(userInfo, message, isMy) {
     setChatNumber(getChatNumber() + 1);
   }
 }
+
+function changeTransLanguage(language) {
+  $(`#country-${chatLanguage}`).removeClass('selected-country');
+  chatLanguage = language;
+  $(`#country-${chatLanguage}`).addClass('selected-country');
+}
+
+changeTransLanguage();

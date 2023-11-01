@@ -28,3 +28,4 @@ const statusBox = document.querySelector('#info-status');
 
 /** chat */
 let transChat = {};
+let chatLanguage = 'en';

@@ -3,6 +3,32 @@
   outline: none;
 }
 
+.close-button-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 1rem;
+}
+
+.country-picker {
+  color: white;
+}
+
+.country-image {
+  width: 24px;
+  height: auto;
+}
+
+.country-container img {
+  cursor: pointer;
+}
+
+.selected-country {
+  border: 1px solid white;
+  padding: 5px;
+  border-radius: 50%;
+}
+
 .chat-input-container {
   display: flex;
   justify-content: center;

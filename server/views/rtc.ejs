@@ -55,6 +55,20 @@
         <div class="close-button-container">
           <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleChat()" />
         </div>
+        <div class="country-picker">
+          <span>채팅번역 언어</span>
+          <div class="country-container">
+            <img id="country-kr" class="country-image" src="/images/south-korea.png" onclick="changeTransLanguage('kr')"/>
+            <img id="country-en" class="country-image" src="/images/united-states.png" onclick="changeTransLanguage('en')"/>
+            <img id="country-zh" class="country-image" src="/images/china.png" onclick="changeTransLanguage('zh')"/>
+            <img id="country-ja" class="country-image" src="/images/japan.png" onclick="changeTransLanguage('ja')"/>
+            <img id="country-fr" class="country-image" src="/images/france.png" onclick="changeTransLanguage('fr')"/>
+            <img id="country-vi"  class="country-image" src="/images/vietnam.png" onclick="changeTransLanguage('vi')"/>
+            <img id="country-ru" class="country-image" src="/images/russia.png" onclick="changeTransLanguage('ru')"/>
+            <img id="country-mn" class="country-image" src="/images/mongol.png" onclick="changeTransLanguage('mn')"/>
+            <img id="country-es" class="country-image" src="/images/spain.png" onclick="changeTransLanguage('es')"/>
+          </div>
+        </div>
         <div class="chat-input-container">
             <textarea id="chat-text-area" class="chat-input" rows="2" cols="10"></textarea> 
             <button class="chat-send-button">
