@@ -88,6 +88,8 @@ function createChatContainer(userInfo, message, isMy) {
   const chatWrapper = document.createElement('div');
   chatWrapper.className = `${isMy ? 'my' : 'other'}-chat-content`;
 
+  const chatId = makeid(10);
+
   // user
   const userProfile = document.createElement('div');
   userProfile.className = 'user-profile';
@@ -105,9 +107,43 @@ function createChatContainer(userInfo, message, isMy) {
   // content
   const chatContent = document.createElement('div');
   chatContent.className = 'chat-content';
+  chatContent.id = `chat-content-${chatId}`;
   chatContent.innerHTML = message.replace(/\r|\n/g, '<br/>');
 
   chatWrapper.append(userProfile, chatContent);
+
+  // trans button
+  if (!isMy) {
+    const transButton = document.createElement('button');
+    transButton.innerHTML = 'translate';
+    transButton.className = 'translate-button';
+    transButton.id = `translate-button-${chatId}`;
+
+    transButton.addEventListener('click', () => {
+      if (!socket) {
+        setStatusText(`올바르게 초기화되지 않아 '${message}' 번역에 실패했습니다.`);
+        return;
+      }
+
+      if (transButton.innerHTML === 'original') {
+        chatContent.innerHTML = message.replace(/\r|\n/g, '<br/>');
+        transButton.innerHTML = 'translate';
+        return;
+      }
+
+      if (transChat[chatId]) {
+        chatContent.innerHTML = transChat[chatId];
+        transButton.innerHTML = 'original';
+        return;
+      }
+
+      console.log('emit!');
+      socket.emit('translate', userInfo, message, 'en', chatId);
+    });
+
+    chatWrapper.append(transButton);
+  }
+
   chatContentContainer.append(chatWrapper);
 
   chatContentContainer.scrollTop = chatContentContainer.scrollHeight;

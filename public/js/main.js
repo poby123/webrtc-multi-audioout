@@ -128,6 +128,12 @@ function init() {
     console.log(fromUserInfo, ' ', message);
     createChatContainer(fromUserInfo, message, fromUserInfo.sessionId === myInfo.sessionId);
   });
+
+  socket.on('translate', (message, chatId) => {
+    transChat[chatId] = message;
+    $(`#chat-content-${chatId}`).html(message);
+    $(`#translate-button-${chatId}`).html('original');
+  });
 }
 /** Init end */
 

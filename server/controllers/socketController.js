@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { encryptObj, decryptObj } = require('../utility/utility');
+const { translateText } = require('../utility/googleTrans');
 
 const Room = require('./room');
 const PREFIX_ROOMS = require('../constants/prefixRoom');
@@ -63,6 +64,17 @@ module.exports = (io) => {
       }
       const updatedStatus = encryptObj({ host: true, joined: true });
       socket.emit('host', updatedStatus);
+    });
+
+    socket.on('translate', async (userInfo, message, targetLanguage, chatId) => {
+      const { sessionId } = userInfo;
+      if (!peers[sessionId]) {
+        console.log('초기화되지 않은, 즉 인가되지 않은 사용자가 접근했습니다. ', userInfo);
+        return;
+      }
+
+      const text = await translateText(message, targetLanguage);
+      socket.emit('translate', text, chatId);
     });
 
     /**
@@ -129,6 +141,10 @@ module.exports = (io) => {
         return;
       }
       const { sessionId } = fromUserInfo;
+
+      if (!sessionId || !peers[sessionId]) {
+        return;
+      }
 
       for (const id in peers) {
         if (rooms[id] != rooms[sessionId]) continue;

@@ -25,3 +25,6 @@ const idBox = document.querySelector('#info-user-id');
 const profileBox = document.querySelector('#info-user-profile');
 const sessionBox = document.querySelector('#info-user-session');
 const statusBox = document.querySelector('#info-status');
+
+/** chat */
+let transChat = {};
