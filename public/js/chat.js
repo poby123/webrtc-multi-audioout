@@ -23,7 +23,7 @@ function sendMessage() {
   }
 
   socket && socket.emit('chat', myInfo, message);
-  createChatContainer(myInfo, message, true);
+  createChatContainer(myInfo, { original: message }, true);
 
   clearInput();
   return true;
@@ -72,19 +72,6 @@ function toggleChat(show) {
 }
 
 function createChatContainer(userInfo, message, isMy) {
-  // <div class="other-chat-content">
-  //   <div class="user-profile">
-  //     <img
-  //       class="profile-image"
-  //       src="https://lh3.googleusercontent.com/a-/AOh14Gge6m6SoNxLUilPuLzv9uqZ8KFisYAGXh14GcFWjg=s96-c"
-  //     />
-  //     <span class="profile-name">이름</span>
-  //   </div>
-  //   <div class="chat-content">
-  //     안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니? 안녕 오늘은 어떤 하루였니?
-  //   </div>
-  // </div>;
-
   const chatWrapper = document.createElement('div');
   chatWrapper.className = `${isMy ? 'my' : 'other'}-chat-content`;
 
@@ -104,48 +91,19 @@ function createChatContainer(userInfo, message, isMy) {
 
   userProfile.append(profileImage, userName);
 
-  // content
+  // chat content
   const chatContent = document.createElement('div');
   chatContent.className = 'chat-content';
   chatContent.id = `chat-content-${chatId}`;
-  chatContent.innerHTML = message.replace(/\r|\n/g, '<br/>');
 
+  const translatedContent = message?.translated?.replace(/\r|\n/g, '<br/>') || '';
+  const originalContent = message?.original?.replace(/\r|\n/g, '<br/>') || '';
+
+  chatContent.innerHTML = `${translatedContent} ${originalContent}`;
+
+  // combine
   chatWrapper.append(userProfile, chatContent);
-
-  // trans button
-  if (!isMy) {
-    const transButton = document.createElement('button');
-    transButton.innerHTML = 'translate';
-    transButton.className = 'translate-button';
-    transButton.id = `translate-button-${chatId}`;
-
-    transButton.addEventListener('click', () => {
-      if (!socket) {
-        setStatusText(`올바르게 초기화되지 않아 '${message}' 번역에 실패했습니다.`);
-        return;
-      }
-
-      if (transButton.innerHTML === 'original') {
-        chatContent.innerHTML = message.replace(/\r|\n/g, '<br/>');
-        transButton.innerHTML = 'translate';
-        return;
-      }
-
-      if (transChat[chatId]) {
-        chatContent.innerHTML = transChat[chatId];
-        transButton.innerHTML = 'original';
-        return;
-      }
-
-      console.log('emit!');
-      socket.emit('translate', userInfo, message, chatLanguage || 'en', chatId);
-    });
-
-    chatWrapper.append(transButton);
-  }
-
   chatContentContainer.append(chatWrapper);
-
   chatContentContainer.scrollTop = chatContentContainer.scrollHeight;
 
   if (isChatShown()) {
@@ -163,4 +121,4 @@ function changeTransLanguage(language) {
   $(`#country-${chatLanguage}`).addClass('selected-country');
 }
 
-changeTransLanguage();
+changeTransLanguage(localStorage.getItem('lang') || 'kr');

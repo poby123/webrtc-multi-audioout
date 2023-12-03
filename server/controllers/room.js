@@ -10,4 +10,5 @@ module.exports = {
   rooms: {},
   creators: {},
   roomsList: {},
+  peerInfo: {},
 };

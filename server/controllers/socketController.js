@@ -14,6 +14,7 @@ const peers = Room.peers; // peers: {[sessionId]: socket}
 const rooms = Room.rooms; // rooms: {[sessionId]: roomId}
 const creators = Room.creators; // creator: {[roomId]: {sessionId: [], userId: ''}}
 const roomsList = Room.roomsList;
+const peerInfos = Room.peerInfo;
 
 module.exports = (io) => {
   io.on('connect', (socket) => {
@@ -25,6 +26,7 @@ module.exports = (io) => {
       socket.join(roomId);
       socket.sessionId = sessionId;
       peers[sessionId] = socket;
+      peerInfos[sessionId] = userInfo;
       console.log('[LOG] : JOIN => ', sessionId);
       const isPrefixRoom = PREFIX_ROOMS[roomId];
 
@@ -64,17 +66,6 @@ module.exports = (io) => {
       }
       const updatedStatus = encryptObj({ host: true, joined: true });
       socket.emit('host', updatedStatus);
-    });
-
-    socket.on('translate', async (userInfo, message, targetLanguage, chatId) => {
-      const { sessionId } = userInfo;
-      if (!peers[sessionId]) {
-        console.log('초기화되지 않은, 즉 인가되지 않은 사용자가 접근했습니다. ', userInfo);
-        return;
-      }
-
-      const text = await translateText(message, targetLanguage);
-      socket.emit('translate', text, chatId);
     });
 
     /**
@@ -136,11 +127,12 @@ module.exports = (io) => {
     /**
      * Chat
      */
-    socket.on('chat', (fromUserInfo, message) => {
+    socket.on('chat', async (fromUserInfo, message) => {
       if (!fromUserInfo) {
         return;
       }
-      const { sessionId } = fromUserInfo;
+
+      const { sessionId, lang } = fromUserInfo;
 
       if (!sessionId || !peers[sessionId]) {
         return;
@@ -149,7 +141,9 @@ module.exports = (io) => {
       for (const id in peers) {
         if (rooms[id] != rooms[sessionId]) continue;
         if (id === sessionId) continue;
-        peers[id].emit('chat', fromUserInfo, message);
+
+        const text = await translateText(message, lang);
+        peers[id].emit('chat', fromUserInfo, { translated: text, original: message });
       }
     });
 
@@ -187,6 +181,7 @@ module.exports = (io) => {
       socket.join(roomId);
       peers[sessionId] = socket;
       rooms[sessionId] = roomId;
+      peerInfos[sessionId] = userInfo;
       roomsList[roomId] = true;
 
       // in case prefix room
@@ -235,6 +230,7 @@ module.exports = (io) => {
       if (!io.sockets.adapter.rooms.get(rooms[sessionId])) {
         creators[targetRoom] && delete creators[targetRoom];
         roomsList[targetRoom] && delete roomsList[targetRoom];
+        peerInfos[sessionId] && delete peerInfos[sessionId];
       }
       rooms[sessionId] && delete rooms[sessionId];
     });
