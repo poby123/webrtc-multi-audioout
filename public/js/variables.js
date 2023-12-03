@@ -7,6 +7,7 @@ let peers = {};
 let current_deviceInfos;
 let streams = {};
 let waitUsers = {};
+let myInfo;
 let users = {};
 let meterRefreshs = {};
 
@@ -28,4 +29,4 @@ const statusBox = document.querySelector('#info-status');
 
 /** chat */
 let transChat = {};
-let chatLanguage = 'en';
+sessionStorage.setItem('lang', 'kr');

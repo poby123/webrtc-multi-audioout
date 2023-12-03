@@ -115,12 +115,4 @@ function createChatContainer(userInfo, message, isMy) {
   }
 }
 
-function changeTransLanguage(language) {
-  console.log('set lang: ', language);
-  sessionStorage.setItem('lang', language);
-  $(`#country-${chatLanguage}`).removeClass('selected-country');
-  chatLanguage = language;
-  $(`#country-${chatLanguage}`).addClass('selected-country');
-}
-
 // changeTransLanguage(sessionStorage.getItem('lang') || 'kr');

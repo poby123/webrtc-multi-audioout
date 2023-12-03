@@ -180,7 +180,7 @@ button:hover {
   align-items: center;
 }
 
-.error-section .container{
+.error-section .container {
   display: flex;
   max-width: 1000px;
   min-height: 450px;

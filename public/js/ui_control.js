@@ -363,3 +363,18 @@ const horizonal = document.querySelector('.horizonal-flex');
 horizonal.addEventListener('click', (e) => {
   toggleConfig(false);
 });
+
+function changeTransLanguage(language) {
+  console.log('lang: ', language);
+  const chatLanguage = sessionStorage.getItem('lang') || 'kr';
+  $(`#country-${chatLanguage}`).removeClass('selected-country');
+  $(`#country2-${chatLanguage}`).removeClass('selected-country');
+
+  sessionStorage.setItem('lang', language);
+  console.log($(`#country-${language}`));
+  $(`#country-${language}`).addClass('selected-country');
+  $(`#country2-${language}`).addClass('selected-country');
+
+  console.log('socket : ', socket);
+  socket?.emit('changeLang', myInfo, language);
+}

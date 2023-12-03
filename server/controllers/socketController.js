@@ -68,6 +68,12 @@ module.exports = (io) => {
       socket.emit('host', updatedStatus);
     });
 
+    socket.on('changeLang', (userInfo, lang) => {
+      const { sessionId } = userInfo;
+      peerInfos[sessionId] = { ...peerInfos[sessionId], lang };
+      console.log('changed info: ', peerInfos[sessionId]);
+    });
+
     /**
      * Init prefix room
      */

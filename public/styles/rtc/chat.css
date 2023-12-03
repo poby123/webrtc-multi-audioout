@@ -24,7 +24,7 @@
 }
 
 .selected-country {
-  border: 1px solid var(--card-background-color);
+  border: 2px solid rgb(246, 114, 136);
   padding: 5px;
   border-radius: 50%;
 }
@@ -44,6 +44,14 @@
   border: 1px solid white;
   border-radius: 6px;
   background-color: var(--card-background-color);
+  color: white;
+}
+
+.chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.576);
+}
+
+.chat-title {
   color: white;
 }
 

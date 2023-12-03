@@ -55,14 +55,27 @@
         <div class="close-button-container">
           <img class="close-icon invert" src="/fonts/xmark.svg" alt="" onclick="toggleChat()" />
         </div>
+        <span class="chat-title">채팅선택</span>
+        <div class="country-container">
+          <img id="country-kr" class="country-image" src="/images/south-korea.png" onclick="changeTransLanguage('kr')"/>
+          <img id="country-en" class="country-image" src="/images/united-states.png" onclick="changeTransLanguage('en')"/>
+          <img id="country-zh" class="country-image" src="/images/china.png" onclick="changeTransLanguage('zh')"/>
+          <img id="country-ja" class="country-image" src="/images/japan.png" onclick="changeTransLanguage('ja')"/>
+          <img id="country-fr" class="country-image" src="/images/france.png" onclick="changeTransLanguage('fr')"/>
+          <img id="country-vi"  class="country-image" src="/images/vietnam.png" onclick="changeTransLanguage('vi')"/>
+          <img id="country-ru" class="country-image" src="/images/russia.png" onclick="changeTransLanguage('ru')"/>
+          <img id="country-mn" class="country-image" src="/images/mongol.png" onclick="changeTransLanguage('mn')"/>
+          <img id="country-es" class="country-image" src="/images/spain.png" onclick="changeTransLanguage('es')"/>
+        </div>
         <div class="chat-input-container">
-            <textarea id="chat-text-area" class="chat-input" rows="2" cols="10"></textarea> 
+            <textarea id="chat-text-area" class="chat-input" rows="2" cols="10" placeholder="이곳에 채팅 입력..."></textarea> 
             <button class="chat-send-button">
               <img src="/fonts/airplane.svg" style="color: white"/>
             </button>
         </div>
         <div class="chat-content-container">
-         
+        
+        </div>
         </div>
       </section>
     </div>
@@ -118,18 +131,18 @@
 
     <section class="entrance-modal">
       <form class="container" id="entrance-form" onsubmit="return handleEntrance(event)">
-        <span class="unit">채팅수신 언어</span>
+        <span class="unit" id="display-lang">채팅언어</span>
         <div class="unit country-picker">
           <div class="country-container">
-            <img id="country-kr" class="country-image" src="/images/south-korea.png" onclick="changeTransLanguage('kr')"/>
-            <img id="country-en" class="country-image" src="/images/united-states.png" onclick="changeTransLanguage('en')"/>
-            <img id="country-zh" class="country-image" src="/images/china.png" onclick="changeTransLanguage('zh')"/>
-            <img id="country-ja" class="country-image" src="/images/japan.png" onclick="changeTransLanguage('ja')"/>
-            <img id="country-fr" class="country-image" src="/images/france.png" onclick="changeTransLanguage('fr')"/>
-            <img id="country-vi"  class="country-image" src="/images/vietnam.png" onclick="changeTransLanguage('vi')"/>
-            <img id="country-ru" class="country-image" src="/images/russia.png" onclick="changeTransLanguage('ru')"/>
-            <img id="country-mn" class="country-image" src="/images/mongol.png" onclick="changeTransLanguage('mn')"/>
-            <img id="country-es" class="country-image" src="/images/spain.png" onclick="changeTransLanguage('es')"/>
+            <img id="country2-kr" class="country-image selected-country" src="/images/south-korea.png" onclick="changeTransLanguage('kr')"/>
+            <img id="country2-en" class="country-image" src="/images/united-states.png" onclick="changeTransLanguage('en')"/>
+            <img id="country2-zh" class="country-image" src="/images/china.png" onclick="changeTransLanguage('zh')"/>
+            <img id="country2-ja" class="country-image" src="/images/japan.png" onclick="changeTransLanguage('ja')"/>
+            <img id="country2-fr" class="country-image" src="/images/france.png" onclick="changeTransLanguage('fr')"/>
+            <img id="country2-vi"  class="country-image" src="/images/vietnam.png" onclick="changeTransLanguage('vi')"/>
+            <img id="country2-ru" class="country-image" src="/images/russia.png" onclick="changeTransLanguage('ru')"/>
+            <img id="country2-mn" class="country-image" src="/images/mongol.png" onclick="changeTransLanguage('mn')"/>
+            <img id="country2-es" class="country-image" src="/images/spain.png" onclick="changeTransLanguage('es')"/>
           </div>
         </div>
         <div class="unit">

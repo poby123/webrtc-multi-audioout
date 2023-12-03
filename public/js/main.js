@@ -1,4 +1,3 @@
-let myInfo;
 let myName = nameBox.value;
 let myId = idBox.value;
 let myProfile = profileBox.value;
