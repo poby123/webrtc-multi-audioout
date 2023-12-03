@@ -70,8 +70,8 @@
     <section class="local-config">
       <meter id="local-sound-meter"></meter>
       <div class="local-config-container">
-        <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
-          <img id="configButtonImage" src="/fonts/cog.svg" />
+        <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()">
+          <img id="userButtonImage" src="/fonts/user.svg" />
         </button>
         <button class="config-icon" id="vidButton" title="toggle video" onclick="toggleVideo()">
           <img id="videoButtonImage" src="/fonts/video.svg" />
@@ -79,8 +79,8 @@
         <button class="config-icon bigger-icon" id="muteButton" title="togle mic" onclick="toggleMute()">
           <img id="muteButtonImage" src="/fonts/microphone.svg" />
         </button>
-        <button class="config-icon" id="userListButton" title="toggle participants list" onclick="toggleUserList()">
-          <img id="userButtonImage" src="/fonts/user.svg" />
+        <button class="config-icon" id="configButton" title="toggle input device modal" onclick="toggleConfig()">
+          <img id="configButtonImage" src="/fonts/cog.svg" />
         </button>
         <button class="config-icon" id="chatButton" title="toggle chat list" onclick="toggleChat()">
           <svg xmlns="http://www.w3.org/2000/svg" height="1.8em" viewBox="0 0 512 512">
@@ -118,8 +118,8 @@
 
     <section class="entrance-modal">
       <form class="container" id="entrance-form" onsubmit="return handleEntrance(event)">
+        <span class="unit">채팅수신 언어</span>
         <div class="unit country-picker">
-          <span>채팅번역 언어</span>
           <div class="country-container">
             <img id="country-kr" class="country-image" src="/images/south-korea.png" onclick="changeTransLanguage('kr')"/>
             <img id="country-en" class="country-image" src="/images/united-states.png" onclick="changeTransLanguage('en')"/>

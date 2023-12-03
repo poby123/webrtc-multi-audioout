@@ -419,8 +419,10 @@ function initUserInfo(username, roomPassword) {
     sessionId: mySessionId,
     status: status,
     roomPassword: roomPassword,
-    lang: localStorage.getItem('lang') || 'kr',
+    lang: sessionStorage.getItem('lang') || 'kr',
   };
+
+  console.log('my info: ', myInfo);
 }
 
 function handleEntrance(e) {

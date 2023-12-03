@@ -142,7 +142,14 @@ module.exports = (io) => {
         if (rooms[id] != rooms[sessionId]) continue;
         if (id === sessionId) continue;
 
-        const text = await translateText(message, lang);
+        const { lang: targetLang } = peerInfos[id];
+        let text = '';
+        try {
+          console.log('translate: ', message, ' to ', targetLang);
+          text = await translateText(message, targetLang);
+        } catch (e) {
+          console.error(e);
+        }
         peers[id].emit('chat', fromUserInfo, { translated: text, original: message });
       }
     });
