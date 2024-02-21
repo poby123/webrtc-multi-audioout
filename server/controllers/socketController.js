@@ -29,14 +29,13 @@ module.exports = (io) => {
         socket.sessionId = sessionId;
         peers[sessionId] = socket;
         peerInfos[sessionId] = userInfo;
-        console.log('[LOG] : JOIN => ', sessionId);
+        console.log(new Date().toJSON(), ' [LOG] : JOIN => ', sessionId);
         const isPrefixRoom = PREFIX_ROOMS[roomId];
 
         // check password of prefix room
         if (isPrefixRoom) {
           if (roomPassword !== PREFIX_ROOMS_PASSWORD) {
             socket.emit('invalidPassword');
-            throw new Error('test error');
             return;
           }
           socket.emit('prefixRoomApproved');
@@ -45,7 +44,7 @@ module.exports = (io) => {
 
         // Participants
         if (creators[roomId] && creators[roomId].userId !== userId) {
-          console.log('[LOG] : JOIN ROOM => ', roomId);
+          console.log(new Date().toJSON(), ' [LOG] : JOIN ROOM => ', roomId);
           const creatorIdArr = creators[roomId]?.sessionId || [];
           creatorIdArr.forEach((id) => peers[id].emit('requestJoin', userInfo));
           return;
@@ -54,10 +53,10 @@ module.exports = (io) => {
         // Hosts
         rooms[sessionId] = roomId;
         if (!creators[roomId]) {
-          console.log('[LOG] : CREATE ROOM => ', roomId);
+          console.log(new Date().toJSON(), ' [LOG] : CREATE ROOM => ', roomId);
           creators[roomId] = { sessionId: [sessionId], userId: userId };
         } else {
-          console.log('[LOG] : ADD HOST');
+          console.log(new Date().toJSON(), ' [LOG] : ADD HOST');
           creators[roomId].sessionId.push(sessionId);
 
           // broadcast to this room except self
@@ -99,10 +98,10 @@ module.exports = (io) => {
 
         rooms[sessionId] = roomId;
         if (!creators[roomId]) {
-          console.log('[LOG] : CREATE ROOM => ', roomId);
+          console.log(new Date().toJSON(), ' [LOG] : CREATE ROOM => ', roomId);
           creators[roomId] = { sessionId: [sessionId], userId: userId };
         } else {
-          console.log('[LOG] : ADD HOST');
+          console.log(new Date().toJSON(), ' [LOG] : ADD HOST');
           creators[roomId].sessionId.push(sessionId);
 
           //broadcast to this room except self
@@ -130,7 +129,7 @@ module.exports = (io) => {
         const { sessionId, name } = userInfo;
 
         if (!result) {
-          userInfo && console.log('[LOG] : ', name + 'is rejected');
+          userInfo && console.log(new Date().toJSON(), ' [LOG] : ', name + 'is rejected');
           peers[sessionId] && peers[sessionId].emit('rejectJoin');
           return;
         }
@@ -219,7 +218,7 @@ module.exports = (io) => {
           return;
         }
 
-        console.log('[LOG] : RESTORE... ', roomId);
+        console.log(new Date().toJSON(), ' [LOG] : RESTORE... ', roomId);
         const sessionId = userInfo.sessionId;
         socket.sessionId = sessionId;
         socket.join(roomId);
@@ -241,7 +240,7 @@ module.exports = (io) => {
 
         // not prefix room
         if (userStatus.host) {
-          console.log('[LOG] : RESTORE HOST OF : ', roomId);
+          console.log(new Date().toJSON(), ' [LOG] : RESTORE HOST OF : ', roomId);
           if (!creators[roomId]) {
             creators[roomId] = { sessionId: [sessionId], userId: userInfo.userId };
           } else if (creators[roomId].userId === userInfo.userId) {
@@ -258,7 +257,7 @@ module.exports = (io) => {
      */
     socket.on('disconnect', () => {
       try {
-        console.log('[LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
+        console.log(new Date().toJSON(), ' [LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
         const sessionId = socket.sessionId;
         const targetRoom = rooms[sessionId];
         const targetCreators = creators[targetRoom]?.sessionId;
@@ -268,7 +267,7 @@ module.exports = (io) => {
         socket[sessionId] && delete socket[sessionId];
 
         if (targetCreators?.includes(sessionId)) {
-          console.log('[LOG] : HOST IS DISCONNECTED');
+          console.log(new Date().toJSON(), ' [LOG] : HOST IS DISCONNECTED');
           creators[targetRoom].sessionId = targetCreators.filter((id) => id !== sessionId);
           if (creators[targetRoom].sessionId.length <= 0) {
             socket.broadcast.to(targetRoom).emit('allHostDisconnected');
