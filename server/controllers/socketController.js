@@ -255,8 +255,11 @@ module.exports = (io) => {
     /**
      * Disconnect
      */
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason, details) => {
       try {
+        console.warn(new Date().toJSON(), ' disconnected');
+        console.warn(new Date().toJSON(), ' reason: ', reason);
+        console.warn(new Date().toJSON(), ' details: ', details);
         console.log(new Date().toJSON(), ' [LOG] : SOCKET DISCONENCTED =>' + socket.sessionId);
         const sessionId = socket.sessionId;
         const targetRoom = rooms[sessionId];
