@@ -209,7 +209,10 @@ function removePeer(sessionId) {
 
 async function switchMedia() {
   const audioSource = audioInputSelect.value;
+  sessionStorage.setItem(AUDIO_INPUT_KEY, audioSource);
+
   const videoSource = videoSelect.value;
+  sessionStorage.setItem(VIDEO_INPUT_KEY, videoSource);
 
   mediaConstraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
   mediaConstraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
@@ -249,33 +252,31 @@ async function switchMedia() {
   }
 }
 
-function attachSinkId(element, sinkId) {
-  if (typeof element.sinkId !== 'undefined') {
-    element
-      .setSinkId(sinkId)
-      .then(() => {
-        console.log(`Success, audio output device attached: ${sinkId}`);
-      })
-      .catch((error) => {
-        let errorMessage = error;
-        if (error.name === 'SecurityError') {
-          errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-        }
-        setStatusText(errorMessage);
-        // Jump back to first output device in the list as it's the default.
-        audioOutputSelect.selectedIndex = 0;
-      });
-  } else {
-    setStatusText('Browser does not support output device selection.');
+async function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId === 'undefined') {
+    setStatusText(
+      '오디오 출력 기기가 올바르지 않아 출력을 변경하지 못했어요. Failed to switch audio output destination.',
+    );
+    return;
   }
+
+  await element.setSinkId(sinkId);
 }
 
-function handleSoundChange() {
+async function handleSoundChange() {
+  const prevValue = sessionStorage.getItem(AUDIO_OUTPUT_KEY, audioDestination);
   const audioDestination = audioOutputSelect.value;
 
   try {
     const videos = document.querySelectorAll('video');
-    videos.forEach((v) => attachSinkId(v, audioDestination));
+    for (const video of videos) {
+      await attachSinkId(video, audioDestination);
+    }
+    sessionStorage.setItem(AUDIO_OUTPUT_KEY, audioDestination);
+  } catch (error) {
+    console.error(error);
+    audioOutputSelect.value = prevValue;
+    window.alert(`오디오 출력 설정에 실패했어요. 다시 한 번 시도해주세요`);
   } finally {
     const localVideoElement = document.getElementById('localVideo');
     localVideoElement.muted = true;
@@ -320,7 +321,6 @@ async function getDevices() {
   const currentVideoInputDeviceId = mediaConstraints.video?.deviceId?.exact;
 
   // Handles being called several times to update labels. Preserve values.
-  const values = selectors.map((select) => select.value);
   selectors.forEach((select) => {
     while (select.firstChild) {
       select.removeChild(select.firstChild);
@@ -345,11 +345,20 @@ async function getDevices() {
     }
   }
 
-  selectors.forEach((select, i) => {
-    if (Array.prototype.slice.call(select.childNodes).some((n) => n.value === values[i])) {
-      select.value = values[i];
-    }
-  });
+  const videoInputDevice = sessionStorage.getItem(VIDEO_INPUT_KEY);
+  if (videoInputDevice) {
+    videoSelect.value = videoInputDevice;
+  }
+
+  const audioInputDevice = sessionStorage.getItem(AUDIO_INPUT_KEY);
+  if (audioInputDevice) {
+    audioInputSelect.value = audioInputDevice;
+  }
+
+  const audioOutputDevice = sessionStorage.getItem(AUDIO_OUTPUT_KEY);
+  if (audioOutputDevice) {
+    audioOutputSelect.value = audioOutputDevice;
+  }
 }
 
 async function getStream() {

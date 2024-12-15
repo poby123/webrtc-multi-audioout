@@ -5,7 +5,7 @@ const statusElement = document.getElementById('status-text');
 const chatContentContainer = document.querySelector('.chat-content-container');
 
 const maximizedVideoSection = document.querySelector('.section-maximized-video');
-const videosConainerGroup = document.querySelector('.video-container-group');
+const videoContainerGroup = document.querySelector('.video-container-group');
 
 let currentMaximizedId = undefined;
 let showConfigModal = false;
@@ -51,7 +51,7 @@ function handleMinimize(e) {
   currentMaximizedId = null;
 
   const selectedContainer = document.getElementById(`container_${id}`);
-  videosConainerGroup.appendChild(selectedContainer);
+  videoContainerGroup.appendChild(selectedContainer);
 
   while (maximizedVideoSection.hasChildNodes()) {
     maximizedVideoSection.removeChild(maximizedVideoSection.firstChild);
@@ -307,6 +307,11 @@ function createParticipantsContainer(id, userInfo, stream) {
   newVid.playsinline = false;
   newVid.autoplay = true;
 
+  const audioOutput = sessionStorage.getItem(AUDIO_OUTPUT_KEY);
+  if (audioOutput) {
+    newVid.setSinkId(audioOutput);
+  }
+
   /* create container */
   let videoContainer = document.createElement('div');
   videoContainer.className = 'video-container';
@@ -344,7 +349,7 @@ function createParticipantsContainer(id, userInfo, stream) {
   let meter = createSoundMeter(id, stream);
 
   // append children
-  videosConainerGroup.appendChild(videoContainer);
+  videoContainerGroup.appendChild(videoContainer);
   videoContainer.appendChild(meter);
   videoContainer.appendChild(newVid);
   videoContainer.appendChild(nameTag);
@@ -356,7 +361,7 @@ function hideAllModal() {
   toggleUserList(false);
 }
 
-// videosConainerGroup.addEventListener('click', hideAllModal);
+// videoContainerGroup.addEventListener('click', hideAllModal);
 // maximizedVideoSection.addEventListener('click', hideAllModal);
 
 const horizonal = document.querySelector('.horizonal-flex');
