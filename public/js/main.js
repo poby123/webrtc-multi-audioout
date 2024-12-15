@@ -264,7 +264,7 @@ async function attachSinkId(element, sinkId) {
 }
 
 async function handleSoundChange() {
-  const prevValue = sessionStorage.getItem(AUDIO_OUTPUT_KEY, audioDestination);
+  const prevValue = sessionStorage.getItem(AUDIO_OUTPUT_KEY);
   const audioDestination = audioOutputSelect.value;
 
   try {
@@ -275,7 +275,9 @@ async function handleSoundChange() {
     sessionStorage.setItem(AUDIO_OUTPUT_KEY, audioDestination);
   } catch (error) {
     console.error(error);
-    audioOutputSelect.value = prevValue;
+    if (prevValue) {
+      audioOutputSelect.value = prevValue;
+    }
     window.alert(`오디오 출력 설정에 실패했어요. 다시 한 번 시도해주세요`);
   } finally {
     const localVideoElement = document.getElementById('localVideo');
