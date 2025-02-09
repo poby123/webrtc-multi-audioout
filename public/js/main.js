@@ -213,10 +213,7 @@ function removePeer(sessionId) {
 
 async function switchMedia() {
   const audioSource = audioInputSelect.value;
-  sessionStorage.setItem(AUDIO_INPUT_KEY, audioSource);
-
   const videoSource = videoSelect.value;
-  sessionStorage.setItem(VIDEO_INPUT_KEY, videoSource);
 
   mediaConstraints.audio = { ...constraints.audio, deviceId: audioSource ? { exact: audioSource } : undefined };
   mediaConstraints.video = { ...constraints.video, deviceId: videoSource ? { exact: videoSource } : undefined };
@@ -349,16 +346,6 @@ async function getDevices() {
       option.text = label || `speaker ${audioOutputSelect.length + 1}`;
       audioOutputSelect.appendChild(option);
     }
-  }
-
-  const videoInputDevice = sessionStorage.getItem(VIDEO_INPUT_KEY);
-  if (videoInputDevice) {
-    videoSelect.value = videoInputDevice;
-  }
-
-  const audioInputDevice = sessionStorage.getItem(AUDIO_INPUT_KEY);
-  if (audioInputDevice) {
-    audioInputSelect.value = audioInputDevice;
   }
 
   const audioOutputDevice = sessionStorage.getItem(AUDIO_OUTPUT_KEY);
