@@ -17,6 +17,10 @@ let audioOutputSelect = document.querySelector('select#audioOutputSource');
 let videoSelect = document.querySelector('select#videoSource');
 let selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
+/** local buttons */
+let localMaximizeButton = document.querySelector('#maximizeButton_local');
+localMaximizeButton.addEventListener('click', handleMaximize);
+
 /**
  * Init start
  */

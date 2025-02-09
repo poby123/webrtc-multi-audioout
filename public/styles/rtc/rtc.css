@@ -26,6 +26,9 @@ button {
   background: none;
   background: white;
 }
+video {
+  max-height: 80vh;
+}
 
 .horizonal-flex {
   display: flex;
@@ -183,7 +186,7 @@ button {
   display: grid;
   height: fit-content;
   padding-bottom: 15vh;
-  grid-template-columns: repeat(auto-fit, minmax(25%, auto));
+  grid-template-columns: repeat(auto-fit, minmax(33%, auto));
 }
 
 .video-container {

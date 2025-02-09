@@ -51,7 +51,11 @@ function handleMinimize(e) {
   currentMaximizedId = null;
 
   const selectedContainer = document.getElementById(`container_${id}`);
-  videoContainerGroup.appendChild(selectedContainer);
+  if (id === 'local') {
+    videoContainerGroup.prepend(selectedContainer);
+  } else {
+    videoContainerGroup.appendChild(selectedContainer);
+  }
 
   while (maximizedVideoSection.hasChildNodes()) {
     maximizedVideoSection.removeChild(maximizedVideoSection.firstChild);
@@ -62,7 +66,7 @@ function handleMinimize(e) {
     targetElement.src = '/fonts/maximize-solid.svg';
   }
 
-  $('.video-container-group').css('display', 'flex');
+  $('.video-container-group').css('display', 'grid');
   $('.section-maximized-video').css('display', 'none');
 }
 
