@@ -17,12 +17,30 @@ const creators = Room.creators; // creator: {[roomId]: {sessionId: [], userId: '
 const roomsList = Room.roomsList;
 const peerInfos = Room.peerInfo;
 
+const EVENT_KEYS = {
+  INIT: 'init',
+  CHANGE_LANG: 'changeLang',
+  INIT_PREFIX_ROOM: 'initPrefixRoom',
+  INVALID_PASSWORD: 'invalidPassword',
+  PREFIX_ROOM_APPROVED: 'prefixRoomApproved',
+
+  REJECT_JOIN: 'rejectJoin',
+  APPROVED_JOIN: 'approvedJoin',
+
+  REQUEST_JOIN: 'requestJoin',
+  CHAT: 'chat',
+  INIT_SEND: 'initSend',
+  INIT_RECEIVE: 'initReceive',
+  SIGNAL: 'signal',
+  HOST: 'host',
+
+  RESTORE: 'restore',
+  DISCONNECT: 'disconnect',
+};
+
 module.exports = (io) => {
   io.on('connect', (socket) => {
-    /**
-     * Init
-     */
-    socket.on('init', (userInfo, roomId) => {
+    socket.on(EVENT_KEYS.INIT, (userInfo, roomId) => {
       try {
         const { sessionId, userId, roomPassword } = userInfo;
         socket.join(roomId);
@@ -35,10 +53,10 @@ module.exports = (io) => {
         // check password of prefix room
         if (isPrefixRoom) {
           if (roomPassword !== PREFIX_ROOMS_PASSWORD) {
-            socket.emit('invalidPassword');
+            socket.emit(EVENT_KEYS.INVALID_PASSWORD);
             return;
           }
-          socket.emit('prefixRoomApproved');
+          socket.emit(EVENT_KEYS.PREFIX_ROOM_APPROVED);
           return;
         }
 
@@ -46,7 +64,7 @@ module.exports = (io) => {
         if (creators[roomId] && creators[roomId].userId !== userId) {
           console.log(new Date().toJSON(), ' [LOG] : JOIN ROOM => ', roomId);
           const creatorIdArr = creators[roomId]?.sessionId || [];
-          creatorIdArr.forEach((id) => peers[id].emit('requestJoin', userInfo));
+          creatorIdArr.forEach((id) => peers[id].emit(EVENT_KEYS.REQUEST_JOIN, userInfo));
           return;
         }
 
@@ -63,30 +81,27 @@ module.exports = (io) => {
           for (const id in peers) {
             if (rooms[id] != rooms[sessionId]) continue;
             if (id === sessionId) continue;
-            peers[id].emit('initReceive', userInfo);
+            peers[id].emit(EVENT_KEYS.INIT_RECEIVE, userInfo);
           }
         }
         const updatedStatus = encryptObj({ host: true, joined: true });
-        socket.emit('host', updatedStatus);
+        socket.emit(EVENT_KEYS.HOST, updatedStatus);
       } catch (error) {
         errorHandler(error, `init`, userInfo, roomId);
       }
     });
 
-    socket.on('changeLang', (userInfo, lang) => {
+    socket.on(EVENT_KEYS.CHANGE_LANG, (userInfo, lang) => {
       try {
         const { sessionId } = userInfo;
         peerInfos[sessionId] = { ...peerInfos[sessionId], lang };
         console.log('changed info: ', peerInfos[sessionId]);
       } catch (error) {
-        errorHandler(error, 'changeLang', userInfo, lang);
+        errorHandler(error, EVENT_KEYS.CHANGE_LANG, userInfo, lang);
       }
     });
 
-    /**
-     * Init prefix room
-     */
-    socket.on('initPrefixRoom', (userInfo, roomId) => {
+    socket.on(EVENT_KEYS.INIT_PREFIX_ROOM, (userInfo, roomId) => {
       try {
         const { sessionId, userId, roomPassword } = userInfo;
 
@@ -118,10 +133,7 @@ module.exports = (io) => {
       }
     });
 
-    /**
-     * Request join
-     */
-    socket.on('requestJoin', (userInfo, result, roomId) => {
+    socket.on(EVENT_KEYS.REQUEST_JOIN, (userInfo, result, roomId) => {
       try {
         if (!userInfo) {
           return;
@@ -130,7 +142,7 @@ module.exports = (io) => {
 
         if (!result) {
           userInfo && console.log(new Date().toJSON(), ' [LOG] : ', name + 'is rejected');
-          peers[sessionId] && peers[sessionId].emit('rejectJoin');
+          peers[sessionId] && peers[sessionId].emit(EVENT_KEYS.REJECT_JOIN);
           return;
         }
 
@@ -138,19 +150,16 @@ module.exports = (io) => {
         for (const id in peers) {
           if (rooms[id] != rooms[sessionId]) continue;
           if (id === sessionId) continue;
-          peers[id].emit('initReceive', userInfo);
+          peers[id].emit(EVENT_KEYS.INIT_RECEIVE, userInfo);
         }
         const updatedStatus = encryptObj({ host: false, joined: true });
-        peers[sessionId] && peers[sessionId].emit('approvedJoin', updatedStatus);
+        peers[sessionId] && peers[sessionId].emit(EVENT_KEYS.APPROVED_JOIN, updatedStatus);
       } catch (error) {
         errorHandler(error, 'request join', userInfo, result, roomId);
       }
     });
 
-    /**
-     * Chat
-     */
-    socket.on('chat', async (fromUserInfo, message) => {
+    socket.on(EVENT_KEYS.CHAT, async (fromUserInfo, message) => {
       try {
         if (!fromUserInfo) {
           return;
@@ -174,43 +183,34 @@ module.exports = (io) => {
           } catch (e) {
             console.error(e);
           }
-          peers[id].emit('chat', fromUserInfo, { translated: text, original: message });
+          peers[id].emit(EVENT_KEYS.CHAT, fromUserInfo, { translated: text, original: message });
         }
       } catch (error) {
-        errorHandler(error, 'chat', fromUserInfo, message);
+        errorHandler(error, EVENT_KEYS.CHAT, fromUserInfo, message);
       }
     });
 
-    /**
-     * Init send
-     */
-    socket.on('initSend', (id, userInfo) => {
+    socket.on(EVENT_KEYS.INIT_SEND, (id, userInfo) => {
       try {
-        peers[id] && peers[id].emit('initSend', userInfo);
+        peers[id] && peers[id].emit(EVENT_KEYS.INIT_SEND, userInfo);
       } catch (error) {
-        errorHandler(error, 'initSend', id, userInfo);
+        errorHandler(error, EVENT_KEYS.INIT_SEND, id, userInfo);
       }
     });
 
-    /**
-     * Signal
-     */
-    socket.on('signal', (data, sessionId) => {
+    socket.on(EVENT_KEYS.SIGNAL, (data, sessionId) => {
       try {
         if (!peers[data.sessionId]) return;
-        peers[data.sessionId].emit('signal', {
+        peers[data.sessionId].emit(EVENT_KEYS.SIGNAL, {
           sessionId: sessionId,
           signal: data.signal,
         });
       } catch (error) {
-        errorHandler(error, 'signal', sessionId);
+        errorHandler(error, EVENT_KEYS.SIGNAL, sessionId);
       }
     });
 
-    /**
-     * Restore
-     */
-    socket.on('restore', (userInfo, roomId) => {
+    socket.on(EVENT_KEYS.RESTORE, (userInfo, roomId) => {
       try {
         const userStatus = decryptObj(userInfo.status);
 
@@ -248,14 +248,11 @@ module.exports = (io) => {
           }
         }
       } catch (error) {
-        errorHandler(error, 'restore', userInfo, roomId);
+        errorHandler(error, EVENT_KEYS.RESTORE, userInfo, roomId);
       }
     });
 
-    /**
-     * Disconnect
-     */
-    socket.on('disconnect', (reason, details) => {
+    socket.on(EVENT_KEYS.DISCONNECT, (reason, details) => {
       try {
         console.warn(new Date().toJSON(), ' disconnected');
         console.warn(new Date().toJSON(), ' reason: ', reason);
